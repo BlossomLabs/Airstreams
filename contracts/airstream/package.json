@@ -1,0 +1,21 @@
+{
+  "name": "hardhat-project",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
+    "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",
+    "hardhat": "^2.22.7"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.2",
+    "@openzeppelin/contracts-upgradeable": "^5.0.2",
+    "hardhat-abi-exporter": "^2.10.1"
+  },
+  "scripts": {
+    "build": "hardhat compile",
+    "deploy:sepolia": "hardhat ignition deploy ignition/modules/AirstreamFactory.ts --network sepolia --strategy create2 --parameters ignition/parameters/sepolia.json",
+    "deploy:base": "hardhat ignition deploy ignition/modules/AirstreamFactory.ts --network base --strategy create2 --parameters ignition/parameters/base.json",
+    "dev": "hardhat node",
+    "test": "hardhat test --network hardhat",
+    "test:coverage": "SOLIDITY_COVERAGE=true hardhat coverage"
+  }
+}
