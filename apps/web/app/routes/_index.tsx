@@ -11,7 +11,7 @@ export default function Home() {
           Welcome to the future of airdropping
         </h1>
         <Button
-          onClick={() => navigate("/launch")}
+          onClick={() => navigate("/create")}
           className="font-header py-4 px-8 rounded-lg text-xl mx-auto"
         >
           Create an Airstream
