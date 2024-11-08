@@ -13,6 +13,8 @@ contract AirstreamFactory {
 
     struct DeploymentConfig {
         address distributionToken;
+        bytes32 merkleRoot;
+        uint256 totalAmount;
     }
 
     address public immutable gdav1Forwarder;
@@ -27,7 +29,13 @@ contract AirstreamFactory {
     function createAirstream(DeploymentConfig calldata config) public {
         Airstream airstream = Airstream(payable(new ERC1967Proxy(
             address(implementation),
-            abi.encodeWithSelector(implementation.initialize.selector, msg.sender, config.distributionToken)
+            abi.encodeWithSelector(
+                implementation.initialize.selector,
+                msg.sender,
+                config.distributionToken,
+                config.merkleRoot,
+                config.totalAmount
+            )
         )));
         emit AirstreamCreated(address(airstream), address(airstream.pool()));
     }

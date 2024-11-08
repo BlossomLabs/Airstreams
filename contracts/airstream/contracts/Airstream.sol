@@ -5,27 +5,71 @@ pragma solidity ^0.8.22;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {GDAv1Forwarder, PoolConfig} from "./interfaces/GDAv1Forwarder.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ISuperfluidPool} from "./interfaces/ISuperfluidPool.sol";
+import {Claimable} from "./abstract/Claimable.sol";
 
-contract Airstream is Initializable, OwnableUpgradeable, UUPSUpgradeable {
+library AirstreamLib {
+    function toPoolUnits(uint256 value) internal pure returns (uint128) {
+        return uint128(value / 1e15);
+    }
+}
+
+contract Airstream is Initializable, OwnableUpgradeable, UUPSUpgradeable, Claimable, ReentrancyGuardUpgradeable {
+    using AirstreamLib for uint256;
 
     error PoolCreationFailed();
+
+    event Withdrawn(address token, address account, uint256 amount);
+    event Claimed(address indexed account, uint256 amount);
     
     address public immutable gdav1Forwarder;
     ISuperfluidPool public pool;
-
+    bytes32 public merkleRoot_;
+    uint256 public unclaimedAmount;
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(address _gdav1Forwarder) {
         gdav1Forwarder = _gdav1Forwarder;
         _disableInitializers();
     }
 
-    function initialize(address initialOwner, address distributionToken) initializer public {
-        __Ownable_init(initialOwner);
+    function initialize(address _initialOwner, address _distributionToken, bytes32 _merkleRoot, uint256 _totalAmount) initializer public {
+        __Ownable_init(_initialOwner);
         __UUPSUpgradeable_init();
 
-        _createPool(distributionToken, gdav1Forwarder);
+        _createPool(_distributionToken, gdav1Forwarder);
+        merkleRoot_ = _merkleRoot;
+        unclaimedAmount = _totalAmount;
+    }
+
+    function claim(address account, uint256 amount, bytes32[] calldata proof) nonReentrant external {
+        _claim(account, amount, proof);
+        pool.updateMemberUnits(account, amount.toPoolUnits());
+        IERC20 token = IERC20(pool.superToken());
+        token.transfer(account, token.balanceOf(address(this)) * amount / unclaimedAmount);
+        unclaimedAmount -= amount;
+        pool.updateMemberUnits(address(this), unclaimedAmount.toPoolUnits());
+        emit Claimed(account, amount);
+    }
+
+    /**
+     * @notice Withdraw tokens from the contract
+     * @param _token Address of the token to withdraw
+     */
+    function withdraw(address _token) public onlyOwner {
+        uint256 balance = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).transfer(msg.sender, balance);
+        emit Withdrawn(_token, msg.sender, balance);
+    }
+
+    function merkleRoot() public view override returns (bytes32) {
+        return merkleRoot_;
+    }
+
+    function distributionToken() public view returns (address) {
+        return pool.superToken();
     }
 
     function _authorizeUpgrade(address newImplementation)
@@ -49,5 +93,6 @@ contract Airstream is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         if (!_success) revert PoolCreationFailed();
         // Set the Airstream's pool
         pool = ISuperfluidPool(_pool);
+        pool.updateMemberUnits(address(this), unclaimedAmount.toPoolUnits());
     }
 }

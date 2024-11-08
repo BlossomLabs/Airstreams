@@ -8,6 +8,7 @@ export function getMerkleRoot(recipients: Recipient[]): `0x${string}` {
     ["address", "uint256"],
   );
   downloadMerkleTree(tree);
+  console.log("Merkle root", tree.root);
   return tree.root as `0x${string}`;
 }
 
@@ -16,7 +17,7 @@ function downloadMerkleTree(
 ) {
   const json = tree.dump();
   const content = JSON.stringify(json, (_, value) =>
-    typeof value === "bigint" ? Number(value) : value,
+    typeof value === "bigint" ? String(value) : value,
   );
 
   // Create a Blob from the content
