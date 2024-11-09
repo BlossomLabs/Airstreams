@@ -8,5 +8,5 @@ export const SOCIAL_TWITTER = "@blossom_labs";
 export const SOCIAL_GITHUB = "BlossomLabs/airstream";
 
 export const AIRSTREAM_FACTORY_ADDRESS =
-  "0x0000000000000000000000000000000000000000";
+  "0x4Aafb807633e45dc72c8EE9d093e84C772fA134c";
 export const NETWORK: "base" | "sepolia" = "sepolia";

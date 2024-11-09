@@ -36,7 +36,7 @@ export function useCreateAirstreamForm() {
   return useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      distributionToken: "",
+      distributionToken: "0x30a6933ca9230361972e413a15dc8114c952414e",
       recipients: [{ address: "", amount: 0 }],
       airstreamDuration: { amount: 0, unit: "years" },
     },

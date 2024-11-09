@@ -1,4 +1,5 @@
 import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
+import { getAddress } from "viem";
 
 type Recipient = { address: `0x${string}`; amount: bigint };
 
@@ -7,15 +8,32 @@ export function getMerkleRoot(recipients: Recipient[]): `0x${string}` {
     recipients.map((recipient) => [recipient.address, recipient.amount]),
     ["address", "uint256"],
   );
-  downloadMerkleTree(tree);
-  console.log("Merkle root", tree.root);
   return tree.root as `0x${string}`;
 }
 
-function downloadMerkleTree(
-  tree: StandardMerkleTree<(bigint | `0x${string}`)[]>,
+export function getProof(json: any, address: `0x${string}`) {
+  const tree = StandardMerkleTree.load(json);
+
+  for (const [i, v] of tree.entries()) {
+    if (v[0] === address) {
+      return [tree.getProof(i) as `0x${string}`[], BigInt(v[1])];
+    }
+  }
+  return null;
+}
+
+export function downloadMerkleTree(
+  recipients: Recipient[],
+  contract: `0x${string}`,
+  chain: "sepolia",
 ) {
-  const json = tree.dump();
+  const tree = StandardMerkleTree.of(
+    recipients.map((recipient) => [recipient.address, recipient.amount]),
+    ["address", "uint256"],
+  );
+  const json = tree.dump() as any;
+  json.contract = contract;
+  json.chain = chain;
   const content = JSON.stringify(json, (_, value) =>
     typeof value === "bigint" ? String(value) : value,
   );

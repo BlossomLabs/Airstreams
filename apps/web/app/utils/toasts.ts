@@ -40,9 +40,20 @@ function processTxErrorToast(toast: (options: ToastOptions) => void) {
   return;
 }
 
+function sendClaimAirstreamTxErrorToast(
+  toast: (options: ToastOptions) => void,
+) {
+  toast({
+    title: "Error",
+    description: "Failed to send transaction",
+    variant: "destructive",
+  });
+}
+
 export {
   walletNotConnectedToast,
   wrongNetworkToast,
   sendCreateAirstreamTxErrorToast,
   processTxErrorToast,
+  sendClaimAirstreamTxErrorToast,
 };

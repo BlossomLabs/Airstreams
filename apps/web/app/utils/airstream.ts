@@ -1,5 +1,5 @@
 import type { FormValues } from "@/utils/form";
-import { getMerkleRoot } from "@/utils/merkletree";
+import { downloadMerkleTree, getMerkleRoot } from "@/utils/merkletree";
 import { getTimeInSeconds } from "@/utils/time";
 import {
   type PublicClient,
@@ -16,9 +16,11 @@ export async function processTx(
   hash: `0x${string}`,
   publicClient: PublicClient,
 ) {
-  if (!publicClient) return;
-
-  const receipt = await publicClient.waitForTransactionReceipt({ hash });
+  const receipt = await publicClient.waitForTransactionReceipt({
+    hash,
+    timeout: 5 * 60 * 1000,
+  });
+  console.log({ receipt });
 
   const logs = parseEventLogs({
     abi: [
@@ -63,28 +65,31 @@ async function getTokenHolderAddresses(
   return addresses;
 }
 
+export async function getRecipients(values: FormValues) {
+  const recipientAddresses = await getTokenHolderAddresses(values.recipients);
+  const recipients = recipientAddresses.map((address, index) => ({
+    address,
+    amount: parseUnits(String(values.recipients[index].amount), 18), // Supertokens have all 18 decimals
+  }));
+  return recipients;
+}
+
 export async function sendCreateAirstreamTx(
   writeContract: any,
   contractAddress: `0x${string}`,
   values: FormValues,
+  recipients: { address: `0x${string}`; amount: bigint }[],
 ) {
   return new Promise<`0x${string}`>((resolve, reject) => {
     (async () => {
-      let recipientAddresses: `0x${string}`[];
-      try {
-        recipientAddresses = await getTokenHolderAddresses(values.recipients);
-      } catch (e) {
-        return reject(e);
-      }
-      const recipients = recipientAddresses.map((address, index) => ({
-        address,
-        amount: parseUnits(String(values.recipients[index].amount), 18), // Supertokens have all 18 decimals
-      }));
+      // FIXME: This should have the airstream address instead of the factory address
+      downloadMerkleTree(recipients, contractAddress, "sepolia");
+
       writeContract(
         {
           address: contractAddress,
           abi: parseAbi([
-            "struct DeploymentConfig { address distributionToken }",
+            "struct DeploymentConfig { address distributionToken; bytes32 merkleRoot; uint96 totalAmount; uint64 duration; }",
             "function createAirstream(DeploymentConfig memory config)",
           ]),
           functionName: "createAirstream",
@@ -96,8 +101,39 @@ export async function sendCreateAirstreamTx(
                 values.airstreamDuration.amount,
                 values.airstreamDuration.unit,
               ),
+              totalAmount: BigInt(
+                recipients.reduce((acc, curr) => acc + curr.amount, 0n),
+              ),
             },
           ],
+        },
+        {
+          onSuccess: resolve,
+          onError: reject,
+        },
+      );
+    })();
+  });
+}
+
+export async function sendClaimAirstreamTx(
+  writeContract: any,
+  contractAddress: `0x${string}`,
+  address: `0x${string}`,
+  amount: bigint,
+  proof: `0x${string}`[],
+) {
+  return new Promise<`0x${string}`>((resolve, reject) => {
+    (async () => {
+      console.log(contractAddress, { address, amount, proof });
+      writeContract(
+        {
+          address: contractAddress,
+          abi: parseAbi([
+            "function claim(address account, uint256 amount, bytes32[] calldata proof)",
+          ]),
+          functionName: "claim",
+          args: [address, amount, proof],
         },
         {
           onSuccess: resolve,

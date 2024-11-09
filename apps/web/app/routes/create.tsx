@@ -1,10 +1,12 @@
 import BasicParametersCard from "@/components/form/BasicParametersCard";
 import {
   getContractAddress,
+  getRecipients,
   processTx,
   sendCreateAirstreamTx,
 } from "@/utils/airstream";
 import { type FormValues, useCreateAirstreamForm } from "@/utils/form";
+import { downloadMerkleTree } from "@/utils/merkletree";
 import {
   processTxErrorToast,
   sendCreateAirstreamTxErrorToast,
@@ -35,14 +37,21 @@ function CreatePage() {
       wrongNetworkToast(toast);
       return;
     }
+    const recipients = await getRecipients(values);
     let res: `0x${string}` | undefined;
     try {
-      res = await sendCreateAirstreamTx(writeContract, contractAddress, values);
+      res = await sendCreateAirstreamTx(
+        writeContract,
+        contractAddress,
+        values,
+        recipients,
+      );
     } catch (error) {
       console.error(error);
       sendCreateAirstreamTxErrorToast(toast);
       return;
     }
+    console.log({ res });
 
     const result = await processTx(res, publicClient);
     if (!result || !result.airstream) {
@@ -50,6 +59,16 @@ function CreatePage() {
       return;
     }
     const { airstream } = result;
+
+    downloadMerkleTree(recipients, airstream, "sepolia");
+
+    // try {
+    //   res = await sendDistributeFlowTx(writeContract, airstream);
+    // } catch (error) {
+    //   sendDistributeFlowTxErrorToast(toast);
+    //   return;
+    // }
+    // await publicClient.waitForTransactionReceipt({ hash })
     toast({
       title: "Airstream created",
       description: <>{airstream}</>,
