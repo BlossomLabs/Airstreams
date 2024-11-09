@@ -12,12 +12,12 @@ function FormCard({
   description,
 }: { children: React.ReactNode; title: string; description: string }) {
   return (
-    <Card className="border border-teal-500 rounded-lg mb-6 p-6">
+    <Card className="border drop-shadow-[4px_4px_0_#000] rounded-lg mb-6 p-6">
       <CardHeader className="mb-4">
-        <CardTitle className="font-header text-xl font-semibold mb-2">
+        <CardTitle className="font-header text-xl font-semibold mb-2 text-center">
           {title}
         </CardTitle>
-        <CardDescription className="text-gray-600">
+        <CardDescription className="text-gray-600 text-center">
           {description}
         </CardDescription>
       </CardHeader>

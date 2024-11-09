@@ -1,6 +1,6 @@
 {
-  "name": "Airstream",
-  "short_name": "Airstream",
+  "name": "Airstreams",
+  "short_name": "Airstreams",
   "icons": [
     {
       "src": "/images/web-app-manifest-192x192.png",
@@ -15,7 +15,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#6d28d9",
-  "background_color": "#EDE9FE",
+  "theme_color": "#171717",
+  "background_color": "#fef3c7",
   "display": "standalone"
 }

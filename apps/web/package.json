@@ -9,6 +9,7 @@
     "dev": "remix vite:dev -l info"
   },
   "dependencies": {
+    "@fontsource/zen-dots": "^5.1.0",
     "@hookform/resolvers": "^3.9.0",
     "@openzeppelin/merkle-tree": "^1.0.7",
     "@rainbow-me/rainbowkit": "^2.1.3",

@@ -59,15 +59,15 @@ function CreatePage() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="py-10">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="py-10 mt-10">
         <div className="hidden">{JSON.stringify(form.formState.errors)}</div>{" "}
         {/* FIXME: If this is removed, the form will not re-render the errors */}
         <div className="max-w-xl mx-auto">
           <div className="px-3">
-            <h2 className="font-header text-3xl font-bold mb-2">
+            <h2 className="font-header text-3xl font-bold mb-2 text-center">
               Create an Airstream
             </h2>
-            <p className="text-gray-700 mb-6">
+            <p className="text-gray-700 mb-6 text-center">
               This form creates a Superfluid contract with an airdrop streamed
               over time.
             </p>

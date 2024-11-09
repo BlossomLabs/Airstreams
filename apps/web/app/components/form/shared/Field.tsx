@@ -91,7 +91,7 @@ function Field({
                   <AddressAvatar addressOrEns={String(field.value)} />
                 )
               }
-              className="w-full border border-gray-300 rounded-md mb-2 input-number-hide-arrows"
+              className="w-full border bg-white rounded-md mb-2 input-number-hide-arrows"
               placeholder={placeholder}
               onPasteCapture={(e: any) =>
                 onPaste
