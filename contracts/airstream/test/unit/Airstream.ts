@@ -1,14 +1,15 @@
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
+import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 import { expect } from "chai";
 import { viem } from "hardhat";
 import { getAddress, parseUnits, zeroAddress } from "viem";
 import { expectEvent } from "../utils";
 
-import { Abi, encodeFunctionData } from "viem";
+import { encodeFunctionData } from "viem";
 
-const ethxTokenAddress = getAddress(
-  "0x30a6933ca9230361972e413a15dc8114c952414e",
-); // ETHx on Sepolia
+import treeJSON from "../fixtures/merkle-tree.json";
+const tree = StandardMerkleTree.load(treeJSON as any);
+
 const merkleRoot =
   "0x83d9c1db51ee14c9aa71a3f72490fbaf8e3004479de4d0a5dfa57a927654a45b";
 
@@ -43,8 +44,13 @@ const deploy = async () => {
     return viem.getContractAt("Airstream", proxy.address);
   }
 
+  const superToken = await viem.deployContract("ERC20Mock", [
+    "SuperToken",
+    "ST",
+  ]);
+
   const airstream = await deployAirstream(
-    ethxTokenAddress,
+    superToken.address,
     merkleRoot,
     parseUnits("150000", 18),
   );
@@ -64,16 +70,16 @@ const deploy = async () => {
     addr1: wallet1.account.address,
     addr2: wallet2.account.address,
     gdav1Forwarder,
+    superToken: getAddress(superToken.address),
   };
 };
 
 describe("Airstream Contract Tests", () => {
   describe("Deployment", () => {
     it("should deploy with the correct initial parameters", async () => {
-      const { airstream, gdav1Forwarder } = await loadFixture(deploy);
-      expect(await airstream.read.distributionToken()).to.equal(
-        ethxTokenAddress,
-      );
+      const { airstream, gdav1Forwarder, superToken } =
+        await loadFixture(deploy);
+      expect(await airstream.read.distributionToken()).to.equal(superToken);
       expect(await airstream.read.gdav1Forwarder()).to.equal(
         getAddress(gdav1Forwarder.address),
       );
@@ -81,6 +87,25 @@ describe("Airstream Contract Tests", () => {
     it("should revert if the pool cannot be created", async () => {
       const { deployAirstream } = await loadFixture(deploy);
       await expect(deployAirstream(zeroAddress, merkleRoot, 0n)).to.be.rejected;
+    });
+  });
+
+  describe("Claim", () => {
+    it("Should allow elegible accounts to claim a stream", async () => {
+      const { airstream } = await loadFixture(deploy);
+      const [index, [account, amount]] = [...tree.entries()][19];
+      const proof = tree.getProof(index);
+      await airstream.write.claim([account, amount, proof as `0x${string}`[]]);
+      expect(await airstream.read.isClaimed([account])).to.equal(true);
+    });
+    it("Should revert if the account has already claimed", async () => {
+      const { airstream } = await loadFixture(deploy);
+      const [index, [account, amount]] = [...tree.entries()][19];
+      const proof = tree.getProof(index);
+      await airstream.write.claim([account, amount, proof as `0x${string}`[]]);
+      await expect(
+        airstream.write.claim([account, amount, proof as `0x${string}`[]]),
+      ).to.be.rejected;
     });
   });
 
@@ -112,7 +137,6 @@ describe("Airstream Contract Tests", () => {
         },
       );
     });
-
     it("Should revert if withdrawing tokens from a non-owner", async () => {
       const { airstream, addr2 } = await loadFixture(deploy);
       const token = await mintToken(airstream.address);

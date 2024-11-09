@@ -19,4 +19,10 @@ contract GDAv1ForwarderMock {
             pool = address(new PoolMock(token, admin, config));
         }
     }
+
+    function connectPool(address pool, bytes memory userData) external pure returns (bool) {
+        pool;
+        userData;
+        return true;
+    }
 }

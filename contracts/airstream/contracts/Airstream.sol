@@ -21,7 +21,7 @@ contract Airstream is Initializable, OwnableUpgradeable, UUPSUpgradeable, Claima
     using AirstreamLib for uint256;
 
     error PoolCreationFailed();
-
+    error NoUnclaimedTokens();
     event Withdrawn(address token, address account, uint256 amount);
     event Claimed(address indexed account, uint256 amount);
     
@@ -38,19 +38,36 @@ contract Airstream is Initializable, OwnableUpgradeable, UUPSUpgradeable, Claima
     function initialize(address _initialOwner, address _distributionToken, bytes32 _merkleRoot, uint256 _totalAmount) initializer public {
         __Ownable_init(_initialOwner);
         __UUPSUpgradeable_init();
-
-        _createPool(_distributionToken, gdav1Forwarder);
+        if (_totalAmount == 0) {
+            revert NoUnclaimedTokens();
+        }
         merkleRoot_ = _merkleRoot;
         unclaimedAmount = _totalAmount;
+        _createPool(_distributionToken, gdav1Forwarder);
     }
 
     function claim(address account, uint256 amount, bytes32[] calldata proof) nonReentrant external {
+        if (unclaimedAmount == 0) {
+            revert NoUnclaimedTokens();
+        }
+
+        // Verify claim and update state
         _claim(account, amount, proof);
+        
+        // Update pool units for claimer
         pool.updateMemberUnits(account, amount.toPoolUnits());
+
         IERC20 token = IERC20(pool.superToken());
-        token.transfer(account, token.balanceOf(address(this)) * amount / unclaimedAmount);
+
+        uint256 unclaimedBalance = token.balanceOf(address(this)) * amount / unclaimedAmount;
+        if (unclaimedBalance > 0) {
+            token.transfer(account, unclaimedBalance);
+        }
+
+        // Update contract's pool units and state
         unclaimedAmount -= amount;
         pool.updateMemberUnits(address(this), unclaimedAmount.toPoolUnits());
+
         emit Claimed(account, amount);
     }
 
@@ -94,5 +111,6 @@ contract Airstream is Initializable, OwnableUpgradeable, UUPSUpgradeable, Claima
         // Set the Airstream's pool
         pool = ISuperfluidPool(_pool);
         pool.updateMemberUnits(address(this), unclaimedAmount.toPoolUnits());
+        GDAv1Forwarder(gdav1Forwarder).connectPool(_pool, "");
     }
 }
