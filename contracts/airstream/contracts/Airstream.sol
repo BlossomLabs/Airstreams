@@ -21,6 +21,7 @@ contract Airstream is Initializable, OwnableUpgradeable, UUPSUpgradeable, Claima
     using AirstreamLib for uint256;
 
     error PoolCreationFailed();
+    error InvalidDurationOrAmount();
     error NoUnclaimedTokens();
     event Withdrawn(address token, address account, uint256 amount);
     event Claimed(address indexed account, uint256 amount);
@@ -29,20 +30,22 @@ contract Airstream is Initializable, OwnableUpgradeable, UUPSUpgradeable, Claima
     ISuperfluidPool public pool;
     bytes32 public merkleRoot_;
     uint256 public unclaimedAmount;
+    int96 public flowRate;
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(address _gdav1Forwarder) {
         gdav1Forwarder = _gdav1Forwarder;
         _disableInitializers();
     }
 
-    function initialize(address _initialOwner, address _distributionToken, bytes32 _merkleRoot, uint256 _totalAmount) initializer public {
+    function initialize(address _initialOwner, address _distributionToken, bytes32 _merkleRoot, uint96 _totalAmount, uint64 _duration) initializer public {
         __Ownable_init(_initialOwner);
         __UUPSUpgradeable_init();
-        if (_totalAmount == 0) {
-            revert NoUnclaimedTokens();
+        if (_totalAmount == 0 || _duration == 0) {
+            revert InvalidDurationOrAmount();
         }
         merkleRoot_ = _merkleRoot;
         unclaimedAmount = _totalAmount;
+        flowRate = int96(_totalAmount / _duration);
         _createPool(_distributionToken, gdav1Forwarder);
     }
 

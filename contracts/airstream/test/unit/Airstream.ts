@@ -28,6 +28,7 @@ const deploy = async () => {
     superToken: `0x${string}`,
     merkleRoot: `0x${string}`,
     totalAmount: bigint,
+    duration: number,
   ) {
     const proxy = await viem.deployContract("ERC1967Proxy", [
       airstreamImplementation.address,
@@ -38,7 +39,13 @@ const deploy = async () => {
           ),
         ], // initialize function
         functionName: "initialize",
-        args: [wallet1.account.address, superToken, merkleRoot, totalAmount],
+        args: [
+          wallet1.account.address,
+          superToken,
+          merkleRoot,
+          totalAmount,
+          duration,
+        ],
       }),
     ]);
     return viem.getContractAt("Airstream", proxy.address);
@@ -53,6 +60,7 @@ const deploy = async () => {
     superToken.address,
     merkleRoot,
     parseUnits("150000", 18),
+    24 * 60 * 60, // 1 day
   );
 
   const pool = await viem.getContractAt(
@@ -86,7 +94,8 @@ describe("Airstream Contract Tests", () => {
     });
     it("should revert if the pool cannot be created", async () => {
       const { deployAirstream } = await loadFixture(deploy);
-      await expect(deployAirstream(zeroAddress, merkleRoot, 0n)).to.be.rejected;
+      await expect(deployAirstream(zeroAddress, merkleRoot, 1n, 1)).to.be
+        .rejected;
     });
   });
 

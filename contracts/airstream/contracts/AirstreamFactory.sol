@@ -14,7 +14,8 @@ contract AirstreamFactory {
     struct DeploymentConfig {
         address distributionToken;
         bytes32 merkleRoot;
-        uint256 totalAmount;
+        uint96 totalAmount;
+        uint64 duration;
     }
 
     address public immutable gdav1Forwarder;
@@ -34,7 +35,8 @@ contract AirstreamFactory {
                 msg.sender,
                 config.distributionToken,
                 config.merkleRoot,
-                config.totalAmount
+                config.totalAmount,
+                config.duration
             )
         )));
         emit AirstreamCreated(address(airstream), address(airstream.pool()));

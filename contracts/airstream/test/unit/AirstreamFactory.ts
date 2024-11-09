@@ -55,13 +55,13 @@ describe("AirstreamFactory Contract Tests", () => {
   });
   describe("createCouncil", () => {
     it("should create a new airstream and emit a AirstreamCreated event", async () => {
-      const { airstreamFactory, addr1, addr2, airstreamFromTx } =
-        await loadFixture(deploy);
+      const { airstreamFactory, airstreamFromTx } = await loadFixture(deploy);
       const config = {
         distributionToken:
           "0x30a6933ca9230361972e413a15dc8114c952414e" as `0x${string}`, // ETHx on Sepolia
         merkleRoot:
           "0x83d9c1db51ee14c9aa71a3f72490fbaf8e3004479de4d0a5dfa57a927654a45b" as `0x${string}`,
+        duration: 1000000n,
         totalAmount: parseEther("150000"),
       };
 

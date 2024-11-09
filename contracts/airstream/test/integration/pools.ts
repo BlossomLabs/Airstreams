@@ -52,6 +52,7 @@ const deploy = async () => {
     merkleRoot:
       "0x83d9c1db51ee14c9aa71a3f72490fbaf8e3004479de4d0a5dfa57a927654a45b" as `0x${string}`,
     totalAmount: parseUnits("150000", 18),
+    duration: BigInt(9 * 30 * 24 * 60 * 60),
   };
 
   // Create a new council
@@ -117,7 +118,7 @@ describe("Integration Tests: Pools", () => {
   });
 
   describe("Airstream and Pool Interactions", () => {
-    it("should allow recipients to claim their streams", async () => {
+    it("should allow recipients to claim their streams in different times and do not change significantly", async () => {
       const {
         airstreamContract,
         poolContract,
@@ -129,7 +130,8 @@ describe("Integration Tests: Pools", () => {
       } = await loadFixture(deploy);
 
       // Distribute flows
-      const flowRate = parseUnits("0.001", 18); // 0.001 ETHx per second
+      const flowRate = await airstreamContract.read.flowRate();
+
       await gdav1ForwarderContract.write.distributeFlow(
         [
           config.distributionToken,
