@@ -1,26 +1,33 @@
-import { Button } from "@repo/ui/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { Cta } from "@/components/landing/Cta";
+import { Features } from "@/components/landing/Features";
+import { Hero } from "@/components/landing/Hero";
+import { Sponsors } from "@/components/landing/Sponsors";
+import { Radar } from "lucide-react";
 
 export default function Home() {
-  const navigate = useNavigate();
+  const builders = [
+    {
+      icon: <Radar size={34} />,
+      name: "Blossom Labs",
+      url: "https://blossom.software",
+    },
+  ];
+  const sponsors = [
+    {
+      icon: <Radar size={34} />,
+      name: "Superfluid",
+      url: "https://superfluid.finance",
+    },
+  ];
   return (
-    <div className="font-sans grid grid-rows-[10px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start text-center">
-        <img
-          src="/images/airstream-tower.webp"
-          alt="Airstream Tower"
-          className="w-full"
-        />
-        <h1 className="font-header text-4xl font-bold text-center">
-          Welcome to the future of airdropping
-        </h1>
-        <Button
-          onClick={() => navigate("/create")}
-          className="font-header py-4 px-8 rounded-lg text-xl mx-auto mt-20"
-        >
-          Create an Airstream
-        </Button>
-      </main>
-    </div>
+    <>
+      <Hero />
+      <div className="container flex flex-row justify-between items-center">
+        <Sponsors text="Built by" sponsors={builders} />
+        <Sponsors sponsors={sponsors} />
+      </div>
+      <Features />
+      <Cta />
+    </>
   );
 }
