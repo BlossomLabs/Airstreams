@@ -13,15 +13,10 @@ import { TooltipProvider } from "@repo/ui/components/ui/tooltip";
 import { Layout } from "./components/Layout";
 import { WalletProvider } from "./context/WalletProvider";
 
-import {
-  SITE_DESCRIPTION,
-  SITE_NAME,
-  SITE_URL,
-  SOCIAL_TWITTER,
-} from "../../../constants";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, SOCIAL_X } from "@/utils/site";
 
 import rainbowkitStyles from "@rainbow-me/rainbowkit/styles.css?url";
-import globalsStyles from "@repo/ui/globals.css?url";
+import globalsStyles from "./globals.css?url";
 
 export function links() {
   return [
@@ -62,8 +57,8 @@ export const meta: MetaFunction = () => [
   { name: "twitter:image", content: `${SITE_URL}/opengraph-image.webp` },
   { name: "twitter:title", content: SITE_NAME },
   { name: "twitter:description", content: SITE_DESCRIPTION },
-  { name: "twitter:site", content: SOCIAL_TWITTER },
-  { name: "twitter:creator", content: SOCIAL_TWITTER },
+  { name: "twitter:site", content: SOCIAL_X },
+  { name: "twitter:creator", content: SOCIAL_X },
 ];
 
 export function HydrateFallback() {

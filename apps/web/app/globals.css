@@ -6,7 +6,6 @@
 @tailwind utilities;
 
 @layer base {
-
   :root {
     --font-header: 'Zen Dots', sans-serif;
     --font-body: 'Manrope', sans-serif;
@@ -78,10 +77,14 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body);
   }
 }
 
 @layer components {
+  .font-header {
+    font-family: var(--font-header);
+  }
   .input-number-hide-arrows::-webkit-outer-spin-button,
   .input-number-hide-arrows::-webkit-inner-spin-button {
     -webkit-appearance: none;

@@ -5,7 +5,7 @@ export const Cta = () => {
     <section id="cta" className="bg-muted/50 py-16 my-24 sm:my-32">
       <div className="container place-items-center">
         <div className="lg:col-start-1">
-          <h2 className="text-3xl md:text-4xl font-bold ">
+          <h2 className="text-3xl md:text-4xl font-bold font-header">
             Need more
             <span className="bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text">
               {" "}

@@ -1,33 +1,35 @@
-interface SponsorProps {
-  icon: JSX.Element;
-  name: string;
-  url: string;
-}
+import { Sponsors as SponsorsUI } from "@repo/ui/components/landing/Sponsors";
 
-export const Sponsors = ({
-  text = "Powered by",
-  sponsors,
-}: { text?: string; sponsors: SponsorProps[] }) => {
+const builders = [
+  {
+    logo: (
+      <img
+        src="/images/blossom-logo.svg"
+        alt="Blossom Labs"
+        className="h-10 scale-125"
+      />
+    ),
+    href: "https://blossom.software",
+  },
+];
+const sponsors = [
+  {
+    logo: (
+      <img
+        src="/images/superfluid-logo.svg"
+        alt="Superfluid"
+        className="h-10"
+      />
+    ),
+    href: "https://superfluid.finance",
+  },
+];
+
+export const Sponsors = () => {
   return (
-    <section className="container pt-24 sm:py-32">
-      <h2 className="text-center text-md lg:text-xl font-bold mb-8 text-primary">
-        {text}
-      </h2>
-
-      <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8">
-        {sponsors.map(({ icon, name, url }: SponsorProps) => (
-          <a
-            key={name}
-            href={url}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="flex items-center gap-1 text-muted-foreground/60"
-          >
-            <span>{icon}</span>
-            <h3 className="text-xl  font-bold">{name}</h3>
-          </a>
-        ))}
-      </div>
-    </section>
+    <div className="container flex flex-col sm:flex-row justify-between items-center max-w-4xl mx-auto">
+      <SponsorsUI text="Built by" sponsors={builders} />
+      <SponsorsUI text="Powered by" sponsors={sponsors} />
+    </div>
   );
 };

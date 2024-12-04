@@ -14,15 +14,10 @@ const config = {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: "1.5rem",
       screens: {
         "2xl": "1400px",
       },
-    },
-    fontFamily: {
-      body: ["var(--font-body)"],
-      sans: ["var(--font-body)"],
-      header: ["var(--font-header)"],
     },
     extend: {
       colors: {
@@ -64,15 +59,6 @@ const config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-      },
-      borderWidth: {
-        DEFAULT: "2px",
-        "0": "0",
-        "2": "2px",
-        "3": "3px",
-        "4": "4px",
-        "6": "6px",
-        "8": "8px",
       },
       keyframes: {
         "accordion-down": {

@@ -1,9 +1,4 @@
-import {
-  DISCORD_INVITE,
-  SITE_AUTHOR,
-  SOCIAL_GITHUB,
-  SOCIAL_TWITTER,
-} from "../../../../constants";
+import { SITE_AUTHOR, SOCIAL_GITHUB, SOCIAL_X } from "@/utils/site";
 
 export const Footer = () => {
   return (
@@ -36,7 +31,7 @@ export const Footer = () => {
           <div>
             <a
               rel="noreferrer noopener"
-              href={`https://x.com/${SOCIAL_TWITTER}`}
+              href={`https://x.com/${SOCIAL_X}`}
               className="opacity-60 hover:opacity-100"
             >
               X
@@ -86,19 +81,6 @@ export const Footer = () => {
               className="opacity-60 hover:opacity-100"
             >
               Council.Haus
-            </a>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <h3 className="font-bold text-lg">Community</h3>
-          <div>
-            <a
-              rel="noreferrer noopener"
-              href={`https://discordapp.com/invite/${DISCORD_INVITE}`}
-              className="opacity-60 hover:opacity-100"
-            >
-              Discord
             </a>
           </div>
         </div>

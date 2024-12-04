@@ -9,6 +9,7 @@
     "dev": "remix vite:dev -l info"
   },
   "dependencies": {
+    "@fontsource/manrope": "^5.1.0",
     "@fontsource/zen-dots": "^5.1.0",
     "@hookform/resolvers": "^3.9.0",
     "@openzeppelin/merkle-tree": "^1.0.7",

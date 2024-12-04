@@ -1,5 +1,6 @@
 import type { FormValues } from "@/utils/form";
 import { downloadMerkleTree, getMerkleRoot } from "@/utils/merkletree";
+import { AIRSTREAM_FACTORY_ADDRESS } from "@/utils/site";
 import { getTimeInSeconds } from "@/utils/time";
 import {
   type PublicClient,
@@ -10,7 +11,6 @@ import {
   parseUnits,
 } from "viem";
 import { sepolia } from "viem/chains";
-import { AIRSTREAM_FACTORY_ADDRESS } from "../../../../constants";
 
 export async function processTx(
   hash: `0x${string}`,

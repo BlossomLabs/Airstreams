@@ -1,9 +1,9 @@
 import "@rainbow-me/rainbowkit/styles.css";
+import { SITE_NAME } from "@/utils/site";
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { createPublicClient } from "viem";
 import { http, type Config, createConfig } from "wagmi";
 import { mainnet, sepolia } from "wagmi/chains";
-import { SITE_NAME } from "../../../../constants";
 
 export const WALLETCONNECT_PROJECT_ID =
   import.meta.env.VITE_WALLETCONNECT_PROJECT_ID ?? "";

@@ -1,15 +1,15 @@
+import { SOCIAL_GITHUB } from "@/utils/site";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { useNavigate } from "@remix-run/react";
 import { Button } from "@repo/ui/components/ui/button";
 import { buttonVariants } from "@repo/ui/components/ui/button";
-import { SOCIAL_GITHUB } from "../../../../../constants";
 
 export const Hero = () => {
   const navigate = useNavigate();
   return (
-    <section className="container grid place-items-center py-20 md:py-32 gap-10">
+    <section className="container grid place-items-center py-20 md:py-32 gap-10 max-w-4xl mx-auto">
       <div className="text-center space-y-6">
-        <main className="text-5xl md:text-[3.50rem] font-bold">
+        <main className="text-4xl md:text-5xl font-header">
           <h1 className="inline">
             <span className="inline bg-gradient-to-r from-primary/60 to-primary text-transparent bg-clip-text">
               Airstreaming
