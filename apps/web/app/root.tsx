@@ -1,11 +1,11 @@
-import type { MetaFunction } from "@remix-run/node";
 import {
   Links,
   Meta,
+  type MetaFunction,
   Outlet,
   Scripts,
   ScrollRestoration,
-} from "@remix-run/react";
+} from "react-router";
 
 import { ToastProvider } from "@repo/ui/components/ui/toast";
 import { Toaster } from "@repo/ui/components/ui/toaster";

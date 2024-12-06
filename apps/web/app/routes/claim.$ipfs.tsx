@@ -5,11 +5,11 @@ import { sendClaimAirstreamTx } from "@/utils/airstream";
 import { getProof } from "@/utils/merkletree";
 import { walletNotConnectedToast } from "@/utils/toasts";
 import { sendClaimAirstreamTxErrorToast } from "@/utils/toasts";
-import { useParams } from "@remix-run/react";
 import { Button } from "@repo/ui/components/ui/button";
 import { useToast } from "@repo/ui/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { useParams } from "react-router";
 import type { PublicClient } from "viem";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
 

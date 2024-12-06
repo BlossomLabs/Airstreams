@@ -1,8 +1,8 @@
 import { SOCIAL_GITHUB } from "@/utils/site";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
-import { useNavigate } from "@remix-run/react";
 import { Button } from "@repo/ui/components/ui/button";
 import { buttonVariants } from "@repo/ui/components/ui/button";
+import { useNavigate } from "react-router";
 
 export const Hero = () => {
   const navigate = useNavigate();
