@@ -14,9 +14,11 @@ import {ISuperfluidPool} from "./interfaces/ISuperfluidPool.sol";
 import {Claimable} from "./abstract/Claimable.sol";
 import {Withdrawable} from "./abstract/Withdrawable.sol";
 import {AirstreamLib, AirstreamConfig, AirstreamExtendedConfig} from "./libraries/AirstreamLib.sol";
+import {RedirectLib} from "./libraries/RedirectLib.sol";
 
 contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UUPSUpgradeable, Claimable, Withdrawable, ReentrancyGuardUpgradeable {
     using AirstreamLib for uint256;
+    using RedirectLib for ISuperfluidPool;
 
     error PoolCreationFailed();
     error InvalidDurationOrAmount();
@@ -36,6 +38,12 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
         _disableInitializers();
     }
 
+    /**
+     * @notice Initialize the airstream
+     * @param _controller Address of the controller
+     * @param _config Airstream configuration
+     * @param _extendedConfig Airstream extended configuration
+     */
     function initialize(address _controller, AirstreamConfig memory _config, AirstreamExtendedConfig memory _extendedConfig) initializer public {
         __Pausable_init();
         __Ownable_init(_controller);
@@ -52,14 +60,26 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
         emit AirstreamCreated(_config.name, address(pool));
     }
 
+    /**
+     * @notice Pause the airstream
+     */
     function pause() public onlyOwner {
         _pause();
     }
 
+    /**
+     * @notice Unpause the airstream
+     */
     function unpause() public onlyOwner {
         _unpause();
     }
 
+    /**
+     * @notice Claim the rewards for the given account
+     * @param account Address of the account to claim for
+     * @param amount Amount of the rewards to claim
+     * @param proof Merkle proof for the claim
+     */
     function claim(address account, uint256 amount, bytes32[] calldata proof) external whenNotPaused nonReentrant {
         if (unclaimedAmount == 0) {
             revert NoUnclaimedTokens();
@@ -83,14 +103,37 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
         pool.updateMemberUnits(address(this), unclaimedAmount.toPoolUnits());
     }
 
-    function withdraw(address token) external onlyOwner {
+    /**
+     * @notice Redirect the rewards to the given addresses
+     * @param from Addresses to redirect from
+     * @param to Addresses to redirect to
+     * @param amounts Amounts to redirect
+     */
+    function redirectRewards(address[] memory from, address[] memory to, uint256[] memory amounts) external onlyOwner {
+        pool.redirectUnits(from, to, amounts);
+    }
+
+    /**
+     * @notice Withdraw the token from the airstream contract
+     * @dev The airstream contract must be paused
+     * @param token Address of the token to withdraw
+     */
+    function withdraw(address token) external onlyOwner whenPaused {
         _withdraw(token);
     }
 
+    /**
+     * @notice Get the merkle root
+     * @return The merkle root
+     */
     function merkleRoot() public view override returns (bytes32) {
         return merkleRoot_;
     }
 
+    /**
+     * @notice Get the distribution token
+     * @return The distribution token
+     */
     function distributionToken() public view returns (address) {
         return pool.superToken();
     }

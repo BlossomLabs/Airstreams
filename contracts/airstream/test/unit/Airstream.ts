@@ -110,14 +110,14 @@ describe("Airstream Contract Tests", () => {
   });
 
   describe("Claim", () => {
-    it("Should allow elegible accounts to claim a stream", async () => {
+    it("should allow elegible accounts to claim a stream", async () => {
       const { airstream } = await loadFixture(deploy);
       const [index, [account, amount]] = [...tree.entries()][19];
       const proof = tree.getProof(index);
       await airstream.write.claim([account, amount, proof as `0x${string}`[]]);
       expect(await airstream.read.isClaimed([account])).to.equal(true);
     });
-    it("Should revert if the account has already claimed", async () => {
+    it("should revert if the account has already claimed", async () => {
       const { airstream } = await loadFixture(deploy);
       const [index, [account, amount]] = [...tree.entries()][19];
       const proof = tree.getProof(index);
@@ -137,8 +137,9 @@ describe("Airstream Contract Tests", () => {
       await token.write.mint([councilAddr, parseUnits("0.1", 18)]);
       return token;
     }
-    it("Should allow the owner to withdraw tokens", async () => {
+    it("should allow the owner to withdraw tokens", async () => {
       const { airstream, wallet1, publicClient } = await loadFixture(deploy);
+      await airstream.write.pause();
       const token = await mintToken(airstream.address);
       const tx = await airstream.write.withdraw([token.address]);
       expect(await token.read.balanceOf([airstream.address])).to.equal(0n);
@@ -156,12 +157,19 @@ describe("Airstream Contract Tests", () => {
         },
       );
     });
-    it("Should revert if withdrawing tokens from a non-owner", async () => {
+    it("should revert if withdrawing tokens from a non-owner", async () => {
       const { airstream, addr2 } = await loadFixture(deploy);
       const token = await mintToken(airstream.address);
       await expect(
         airstream.write.withdraw([token.address], { account: addr2 }),
       ).to.be.rejectedWith("OwnableUnauthorizedAccount");
+    });
+    it("should revert if the airstream is not paused", async () => {
+      const { airstream } = await loadFixture(deploy);
+      const token = await mintToken(airstream.address);
+      await expect(
+        airstream.write.withdraw([token.address]),
+      ).to.be.rejectedWith("ExpectedPause");
     });
   });
 });

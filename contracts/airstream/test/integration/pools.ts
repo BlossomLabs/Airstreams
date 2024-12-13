@@ -108,6 +108,7 @@ const deploy = async () => {
     gdav1ForwarderAddress,
   );
 
+  // A helper function to get the claim arguments for a given index of the merkle tree
   function claimArgs(index: number): [`0x${string}`, bigint, `0x${string}`[]] {
     const [_, [account, amount]] = [...tree.entries()][index];
     const proof = tree.getProof(index);
@@ -167,7 +168,7 @@ describe("Integration Tests: Pools", () => {
       const totalFlowRate = await poolContract.read.getTotalFlowRate();
       expectAbsDiff(totalFlowRate, flowRate).to.be.lte(1e8);
 
-      await airstreamContract.write.claim(claimArgs(0));
+      await airstreamContract.write.claim(claimArgs(0)); // Claim the first stream
 
       await impersonateAccount(claimArgs(0)[0]);
       await setBalance(claimArgs(0)[0], 100n ** 18n);
@@ -178,7 +179,7 @@ describe("Integration Tests: Pools", () => {
 
       await mine(1, { interval: 10000 });
 
-      await airstreamContract.write.claim(claimArgs(1));
+      await airstreamContract.write.claim(claimArgs(1)); // Claim the second stream
 
       await impersonateAccount(claimArgs(1)[0]);
       await setBalance(claimArgs(0)[0], 100n ** 18n);
@@ -190,10 +191,56 @@ describe("Integration Tests: Pools", () => {
       await mine(1, { interval: 10000 });
 
       expectAbsDiff(
-        await ethxToken.read.balanceOf([claimArgs(0)[0]]),
-        await ethxToken.read.balanceOf([claimArgs(1)[0]]),
+        await ethxToken.read.balanceOf([claimArgs(0)[0]]), // Balance of the first recipient
+        await ethxToken.read.balanceOf([claimArgs(1)[0]]), // Balance of the second recipient
         "Balances should be equal",
       ).to.be.lte(1e8);
+    });
+    it("should be able to pause and resume the airstream", async () => {
+      const {
+        airstreamContract,
+        airstreamControllerContract,
+        poolContract,
+        claimArgs,
+      } = await loadFixture(deploy);
+
+      // Distribute flows
+      const flowRate = await poolContract.read.getTotalFlowRate();
+      await airstreamContract.write.claim(claimArgs(0));
+
+      // Wait for a short period to allow flows to update and pause the airstream
+      await mine(1, { interval: 1000 });
+      await airstreamControllerContract.write.pauseAirstream();
+      const flowRateAfterPause = await poolContract.read.getTotalFlowRate();
+      const streamedAfterPause =
+        await poolContract.read.getTotalAmountReceivedByMember([
+          claimArgs(0)[0],
+        ]);
+
+      // Wait for a short period to allow flows to update and resume the airstream
+      await mine(1, { interval: 1000 });
+      await airstreamControllerContract.write.resumeAirstream();
+      const flowRateAfterResume = await poolContract.read.getTotalFlowRate();
+      const streamedAfterResume =
+        await poolContract.read.getTotalAmountReceivedByMember([
+          claimArgs(0)[0],
+        ]);
+
+      // Check if the flow rate is 0 after pausing and resumes to the original flow rate
+      expect(flowRateAfterPause).to.be.eq(0n);
+      expect(flowRateAfterResume).to.be.eq(flowRate);
+
+      // Wait for a short period to allow flows to update
+      await mine(1, { interval: 1000 });
+      const currentStreamed =
+        await poolContract.read.getTotalAmountReceivedByMember([
+          claimArgs(0)[0],
+        ]);
+
+      // Check if the stream stopped and resumed correctly
+      expect(streamedAfterPause).not.to.be.eq(0n);
+      expect(streamedAfterPause).to.be.eq(streamedAfterResume);
+      expect(currentStreamed - streamedAfterPause).to.not.be.eq(0n);
     });
   });
 });

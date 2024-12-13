@@ -52,12 +52,16 @@ contract AirstreamFactory {
         Airstream airstream = Airstream(payable(address(new ERC1967Proxy(address(implementation), new bytes(0)))));
         AirstreamController controller = AirstreamController(payable(address(new ERC1967Proxy(address(controllerImplementation), new bytes(0)))));
 
+        // Initialize airstream and controller
+        airstream.initialize(address(controller), config, extendedConfig);
+        controller.initialize(address(this), address(airstream));
+
         // Wrap (if necessary) and transfer tokens to controller
         _sendWrappedTokensToController(token, config.token, address(controller), config.totalAmount);
 
-        // Initialize airstream and controller
-        airstream.initialize(address(controller), config, extendedConfig);
-        controller.initialize(msg.sender, address(airstream));
+        // Start the airstream and transfer ownership
+        controller.resumeAirstream();
+        controller.transferOwnership(msg.sender);
 
         emit AirstreamCreated(address(airstream), address(controller), address(airstream.pool()));
     }
