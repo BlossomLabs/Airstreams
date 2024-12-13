@@ -25,7 +25,7 @@ const deploy = async () => {
   ]);
 
   async function deployAirstream(
-    superToken: `0x${string}`,
+    token: `0x${string}`,
     merkleRoot: `0x${string}`,
     totalAmount: bigint,
     duration: number,
@@ -41,10 +41,20 @@ const deploy = async () => {
         functionName: "initialize",
         args: [
           wallet1.account.address,
-          superToken,
-          merkleRoot,
-          totalAmount,
-          duration,
+          {
+            token: token,
+            merkleRoot,
+            totalAmount,
+            duration,
+          },
+          {
+            superToken: zeroAddress,
+            startDate: 0n,
+            initialRewardPct: 0,
+            claimingWindow: 0n,
+            minimumClaims: 0n,
+            feePct: 0,
+          },
         ],
       }),
     ]);

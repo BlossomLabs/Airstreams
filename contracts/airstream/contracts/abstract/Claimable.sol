@@ -9,6 +9,8 @@ error InvalidProof();
 
 abstract contract Claimable {
 
+    event Claimed(address indexed account, uint256 amount);
+
     // This is a packed array of booleans.
     mapping(uint256 => uint256) private claimedBitMap;
 
@@ -38,5 +40,6 @@ abstract contract Claimable {
 
         // Mark it claimed
         _setClaimed(uint256(uint160(account)));
+        emit Claimed(account, amount);
     }
 }

@@ -8,7 +8,7 @@ import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 import { expect } from "chai";
 import hre, { viem } from "hardhat";
 import { vars } from "hardhat/config";
-import { getAddress, parseEventLogs, parseUnits } from "viem";
+import { getAddress, parseEventLogs, parseUnits, zeroAddress } from "viem";
 
 import treeJSON from "../fixtures/merkle-tree.json";
 const tree = StandardMerkleTree.load(treeJSON as any);
@@ -19,6 +19,9 @@ const ethxTokenAddress = getAddress(
 
 const gdav1ForwarderAddress: `0x${string}` =
   "0x6DA13Bde224A05a288748d857b9e7DDEffd1dE08";
+
+const superTokenFactoryAddress: `0x${string}` =
+  "0x8276469A443D5C6B7146BED45e2abCaD3B6adad9"; // SuperTokenFactory on Optimism
 
 // A helper function to compare two bigints with an absolute difference
 // Usage: expectAbsDiff(totalFlowRate, flowRate).to.be.lte(10n);
@@ -35,6 +38,7 @@ const deploy = async () => {
   // Deploy the AirstreamFactory contract
   const airstreamFactory = await viem.deployContract("AirstreamFactory", [
     gdav1ForwarderAddress,
+    superTokenFactoryAddress,
   ]);
 
   const airstreamFromTx = async (hash: `0x${string}`) => {
@@ -46,23 +50,57 @@ const deploy = async () => {
     return logs[0].args;
   };
 
+  // Mint and transfer ETHx
+  setBalance(wallet1.account.address, parseUnits("150100", 18));
+  const ethxToken = await viem.getContractAt("ERC20", ethxTokenAddress);
+  const tx = await wallet1.sendTransaction({
+    to: ethxTokenAddress,
+    value: parseUnits("150000", 18),
+    data: "0xcf81464b", // upgradeByETH()
+  });
+  await publicClient.waitForTransactionReceipt({ hash: tx });
+
+  // Approve the AirstreamFactory to transfer ETHx
+  await ethxToken.write.approve(
+    [airstreamFactory.address, parseUnits("150000", 18)],
+    {
+      account: wallet1.account.address,
+    },
+  );
+
   // Prepare initial configuration
   const config = {
-    distributionToken: ethxTokenAddress,
+    token: ethxTokenAddress,
+    name: "ETHx Airstream",
     merkleRoot:
       "0x83d9c1db51ee14c9aa71a3f72490fbaf8e3004479de4d0a5dfa57a927654a45b" as `0x${string}`,
     totalAmount: parseUnits("150000", 18),
     duration: BigInt(9 * 30 * 24 * 60 * 60),
   };
 
-  // Create a new council
-  const hash = await airstreamFactory.write.createAirstream([config]);
+  const extendedConfig = {
+    superToken: zeroAddress,
+    startDate: 0n,
+    initialRewardPct: 0,
+    claimingWindow: 0n,
+    minimumClaims: 0n,
+    feePct: 0,
+  };
 
-  const { airstream, pool } = await airstreamFromTx(hash);
+  // Create a new Airstream
+  const hash = await airstreamFactory.write.createAirstream([
+    config,
+    extendedConfig,
+  ]);
+
+  const { airstream, controller, pool } = await airstreamFromTx(hash);
 
   // Get the deployed Airstream contract
   const airstreamContract = await viem.getContractAt("Airstream", airstream);
-
+  const airstreamControllerContract = await viem.getContractAt(
+    "AirstreamController",
+    controller,
+  );
   // Get the deployed Pool contract
   const poolContract = await viem.getContractAt("ISuperfluidPool", pool);
   const gdav1ForwarderContract = await viem.getContractAt(
@@ -76,18 +114,10 @@ const deploy = async () => {
     return [account, amount, proof as `0x${string}`[]];
   }
 
-  // Mint and transfer ETHx
-  const ethxToken = await viem.getContractAt("ERC20", config.distributionToken);
-  const tx = await wallet1.sendTransaction({
-    to: config.distributionToken,
-    value: parseUnits("100", 18),
-    data: "0xcf81464b", // upgradeByETH()
-  });
-  await publicClient.waitForTransactionReceipt({ hash: tx });
-
   return {
     airstreamFactory,
     airstreamContract,
+    airstreamControllerContract,
     poolContract,
     gdav1ForwarderContract,
     publicClient,
@@ -123,25 +153,12 @@ describe("Integration Tests: Pools", () => {
         airstreamContract,
         poolContract,
         gdav1ForwarderContract,
-        config,
-        wallet1,
         ethxToken,
         claimArgs,
       } = await loadFixture(deploy);
 
       // Distribute flows
       const flowRate = await airstreamContract.read.flowRate();
-
-      await gdav1ForwarderContract.write.distributeFlow(
-        [
-          config.distributionToken,
-          wallet1.account.address,
-          poolContract.address,
-          flowRate,
-          "0x",
-        ],
-        { account: wallet1.account.address },
-      );
 
       // Wait for a short period to allow flows to update
       await mine(1, { interval: 1000 });

@@ -25,4 +25,13 @@ contract GDAv1ForwarderMock {
         userData;
         return true;
     }
+
+    function distributeFlow(address token, address receiver, address pool, int96 flowRate, bytes memory userData) external pure returns (bool) {
+        token;
+        receiver;
+        pool;
+        flowRate;
+        userData;
+        return true;
+    }
 }

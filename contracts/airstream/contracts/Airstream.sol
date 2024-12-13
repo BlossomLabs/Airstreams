@@ -2,54 +2,65 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.22;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
-import {GDAv1Forwarder, PoolConfig} from "./interfaces/GDAv1Forwarder.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+import {GDAv1Forwarder, PoolConfig} from "./interfaces/GDAv1Forwarder.sol";
 import {ISuperfluidPool} from "./interfaces/ISuperfluidPool.sol";
 import {Claimable} from "./abstract/Claimable.sol";
+import {Withdrawable} from "./abstract/Withdrawable.sol";
+import {AirstreamLib, AirstreamConfig, AirstreamExtendedConfig} from "./libraries/AirstreamLib.sol";
 
-library AirstreamLib {
-    function toPoolUnits(uint256 value) internal pure returns (uint128) {
-        return uint128(value / 1e15);
-    }
-}
-
-contract Airstream is Initializable, OwnableUpgradeable, UUPSUpgradeable, Claimable, ReentrancyGuardUpgradeable {
+contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UUPSUpgradeable, Claimable, Withdrawable, ReentrancyGuardUpgradeable {
     using AirstreamLib for uint256;
 
     error PoolCreationFailed();
     error InvalidDurationOrAmount();
     error NoUnclaimedTokens();
-    event Withdrawn(address token, address account, uint256 amount);
-    event Claimed(address indexed account, uint256 amount);
-    
+    event AirstreamCreated(string name, address pool);
+
     address public immutable gdav1Forwarder;
+    string public name;
     ISuperfluidPool public pool;
     bytes32 public merkleRoot_;
     uint256 public unclaimedAmount;
     int96 public flowRate;
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(address _gdav1Forwarder) {
         gdav1Forwarder = _gdav1Forwarder;
         _disableInitializers();
     }
 
-    function initialize(address _initialOwner, address _distributionToken, bytes32 _merkleRoot, uint96 _totalAmount, uint64 _duration) initializer public {
-        __Ownable_init(_initialOwner);
+    function initialize(address _controller, AirstreamConfig memory _config, AirstreamExtendedConfig memory _extendedConfig) initializer public {
+        __Pausable_init();
+        __Ownable_init(_controller);
         __UUPSUpgradeable_init();
-        if (_totalAmount == 0 || _duration == 0) {
+        if (_config.totalAmount == 0 || _config.duration == 0) {
             revert InvalidDurationOrAmount();
         }
-        merkleRoot_ = _merkleRoot;
-        unclaimedAmount = _totalAmount;
-        flowRate = int96(_totalAmount / _duration);
-        _createPool(_distributionToken, gdav1Forwarder);
+        name = _config.name;
+        merkleRoot_ = _config.merkleRoot;
+        unclaimedAmount = _config.totalAmount;
+        flowRate = int96(_config.totalAmount / _config.duration);
+        _createPool(_config.token, gdav1Forwarder);
+        _configureExtendedConfig(_extendedConfig);
+        emit AirstreamCreated(_config.name, address(pool));
     }
 
-    function claim(address account, uint256 amount, bytes32[] calldata proof) nonReentrant external {
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    function unpause() public onlyOwner {
+        _unpause();
+    }
+
+    function claim(address account, uint256 amount, bytes32[] calldata proof) external whenNotPaused nonReentrant {
         if (unclaimedAmount == 0) {
             revert NoUnclaimedTokens();
         }
@@ -70,18 +81,10 @@ contract Airstream is Initializable, OwnableUpgradeable, UUPSUpgradeable, Claima
         // Update contract's pool units and state
         unclaimedAmount -= amount;
         pool.updateMemberUnits(address(this), unclaimedAmount.toPoolUnits());
-
-        emit Claimed(account, amount);
     }
 
-    /**
-     * @notice Withdraw tokens from the contract
-     * @param _token Address of the token to withdraw
-     */
-    function withdraw(address _token) public onlyOwner {
-        uint256 balance = IERC20(_token).balanceOf(address(this));
-        IERC20(_token).transfer(msg.sender, balance);
-        emit Withdrawn(_token, msg.sender, balance);
+    function withdraw(address token) external onlyOwner {
+        _withdraw(token);
     }
 
     function merkleRoot() public view override returns (bytes32) {
@@ -97,6 +100,10 @@ contract Airstream is Initializable, OwnableUpgradeable, UUPSUpgradeable, Claima
         onlyOwner
         override
     {}
+
+    function _configureExtendedConfig(AirstreamExtendedConfig memory _extendedConfig) internal {
+        // TODO: Implement extended config
+    }
 
     function _createPool(address _distributionToken, address _gdav1Forwarder) internal onlyInitializing {
         // Create a new pool using the GDAv1Forwarder
