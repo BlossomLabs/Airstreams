@@ -138,6 +138,10 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
         return pool.superToken();
     }
 
+    function getAllocation(address account) public view returns (uint256) {
+        return AirstreamLib.fromPoolUnits(pool.getUnits(account));
+    }
+
     function _authorizeUpgrade(address newImplementation)
         internal
         onlyOwner

@@ -26,7 +26,7 @@ library RedirectLib {
             return;
         }
         // If only from and to are provided, we expect a 2-column table
-        else if (from.length != to.length) {
+        else if (from.length == to.length) {
             _handleTwoColumnRedirect(pool, from, to);
             return;
         }

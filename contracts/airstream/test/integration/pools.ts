@@ -5,7 +5,7 @@ import {
   setBalance,
 } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import hre, { viem } from "hardhat";
 import { vars } from "hardhat/config";
 import { getAddress, parseEventLogs, parseUnits, zeroAddress } from "viem";
@@ -241,6 +241,105 @@ describe("Integration Tests: Pools", () => {
       expect(streamedAfterPause).not.to.be.eq(0n);
       expect(streamedAfterPause).to.be.eq(streamedAfterResume);
       expect(currentStreamed - streamedAfterPause).to.not.be.eq(0n);
+    });
+  });
+
+  describe("Redirections", () => {
+    it("should allow the admin to redirect rewards (many-to-one)", async () => {
+      const {
+        airstreamContract,
+        airstreamControllerContract,
+        claimArgs,
+        wallet1,
+      } = await loadFixture(deploy);
+      await airstreamContract.write.claim(claimArgs(0)); // Claim the first stream
+      await airstreamContract.write.claim(claimArgs(1)); // Claim the second stream
+      const firstAddress = claimArgs(0)[0];
+      const secondAddress = claimArgs(1)[0];
+      const firstAmount = BigInt(claimArgs(0)[1]);
+      const secondAmount = BigInt(claimArgs(1)[1]);
+      await airstreamControllerContract.write.redirectRewards([
+        [firstAddress, secondAddress],
+        [wallet1.account.address],
+        [secondAmount, firstAmount],
+      ]);
+      expect(
+        await airstreamContract.read.getAllocation([firstAddress]),
+      ).to.be.eq(0n);
+      expect(
+        await airstreamContract.read.getAllocation([secondAddress]),
+      ).to.be.eq(0n);
+      expect(
+        await airstreamContract.read.getAllocation([wallet1.account.address]),
+      ).to.be.eq(firstAmount + secondAmount);
+    });
+    it("should allow the admin to redirect rewards (many-to-many)", async () => {
+      const {
+        airstreamContract,
+        airstreamControllerContract,
+        claimArgs,
+        wallet1,
+        wallet2,
+      } = await loadFixture(deploy);
+      await airstreamContract.write.claim(claimArgs(0)); // Claim the first stream
+      await airstreamContract.write.claim(claimArgs(1)); // Claim the second stream
+      const firstAddress = claimArgs(0)[0];
+      const secondAddress = claimArgs(1)[0];
+      const firstAmount = BigInt(claimArgs(0)[1]);
+      const secondAmount = BigInt(claimArgs(1)[1]);
+      await airstreamControllerContract.write.redirectRewards([
+        [firstAddress, secondAddress],
+        [wallet1.account.address, wallet2.account.address],
+        [secondAmount, firstAmount],
+      ]);
+      expect(
+        await airstreamContract.read.getAllocation([firstAddress]),
+      ).to.be.eq(0n);
+      expect(
+        await airstreamContract.read.getAllocation([secondAddress]),
+      ).to.be.eq(0n);
+      expect(
+        await airstreamContract.read.getAllocation([wallet1.account.address]),
+      ).to.be.eq(firstAmount);
+      expect(
+        await airstreamContract.read.getAllocation([wallet2.account.address]),
+      ).to.be.eq(secondAmount);
+    });
+    it("should allow the admin to redirect rewards (many-to-many with different amounts)", async () => {
+      const {
+        airstreamContract,
+        airstreamControllerContract,
+        claimArgs,
+        wallet1,
+        wallet2,
+      } = await loadFixture(deploy);
+      await airstreamContract.write.claim(claimArgs(0)); // Claim the first stream
+      await airstreamContract.write.claim(claimArgs(10)); // Claim the second stream
+      const firstAddress = claimArgs(0)[0];
+      const secondAddress = claimArgs(10)[0];
+      const firstAmount = BigInt(claimArgs(0)[1]);
+      const secondAmount = BigInt(claimArgs(10)[1]);
+      assert(
+        firstAmount !== secondAmount,
+        "First and second amounts should be different",
+      );
+      await airstreamControllerContract.write.redirectRewards([
+        [firstAddress, secondAddress],
+        [wallet1.account.address, wallet2.account.address],
+        [secondAmount, firstAmount],
+      ]);
+      expect(
+        await airstreamContract.read.getAllocation([firstAddress]),
+      ).to.be.eq(0n);
+      expect(
+        await airstreamContract.read.getAllocation([secondAddress]),
+      ).to.be.eq(0n);
+      expect(
+        await airstreamContract.read.getAllocation([wallet1.account.address]),
+      ).to.be.eq(secondAmount);
+      expect(
+        await airstreamContract.read.getAllocation([wallet2.account.address]),
+      ).to.be.eq(firstAmount);
     });
   });
 });

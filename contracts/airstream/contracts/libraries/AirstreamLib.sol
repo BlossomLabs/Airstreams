@@ -23,4 +23,8 @@ library AirstreamLib {
     function toPoolUnits(uint256 value) internal pure returns (uint128) {
         return uint128(value / 1e15);
     }
+
+    function fromPoolUnits(uint128 value) internal pure returns (uint256) {
+        return value * 1e15;
+    }
 }

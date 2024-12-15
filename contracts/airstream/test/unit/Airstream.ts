@@ -128,6 +128,21 @@ describe("Airstream Contract Tests", () => {
     });
   });
 
+  describe("Redirection", () => {
+    it("should allow the admin to redirect units", async () => {
+      const { airstream, addr1 } = await loadFixture(deploy);
+      await airstream.write.redirectRewards([[airstream.address], [addr1], []]);
+    });
+    it("should revert if called by a non-admin", async () => {
+      const { airstream, addr2 } = await loadFixture(deploy);
+      await expect(
+        airstream.write.redirectRewards([[airstream.address], [addr2], []], {
+          account: addr2,
+        }),
+      ).to.be.rejected;
+    });
+  });
+
   describe("Withdrawal", () => {
     async function mintToken(councilAddr: `0x${string}`) {
       const token = await viem.deployContract("ERC20Mock", [
