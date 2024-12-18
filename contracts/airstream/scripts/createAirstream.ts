@@ -1,5 +1,5 @@
 import { viem } from "hardhat";
-import { parseEventLogs } from "viem";
+import { parseEventLogs, parseUnits } from "viem";
 import { AIRSTREAM_FACTORY_ADDRESS } from "../../../constants";
 
 async function main() {
@@ -12,7 +12,12 @@ async function main() {
 
   const hash = await airstreamFactory.write.createAirstream([
     {
-      distributionToken: "0x708169c8C87563Ce904E0a7F3BFC1F3b0b767f41", // DAIx
+      name: "Test Airstream",
+      token: "0x708169c8C87563Ce904E0a7F3BFC1F3b0b767f41", // DAIx
+      merkleRoot:
+        "0x83d9c1db51ee14c9aa71a3f72490fbaf8e3004479de4d0a5dfa57a927654a45b" as `0x${string}`,
+      totalAmount: parseUnits("150000", 18),
+      duration: 1000000n,
     },
   ]);
 

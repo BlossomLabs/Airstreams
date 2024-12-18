@@ -16,6 +16,7 @@ contract SuperTokenMock is ERC20 {
     }
 
     function upgradeTo(address to, uint256 amount, bytes memory userData) external {
+        userData;
         ERC20(underlyingToken).transferFrom(msg.sender, address(this), amount);
         _mint(to, amount);
     }

@@ -2,7 +2,6 @@ import type { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-ignition-viem";
 import "hardhat-abi-exporter";
-import type { AbiExporterUserConfig } from "hardhat-abi-exporter";
 import { vars } from "hardhat/config";
 
 const alchemyKey = vars.has("ALCHEMY_KEY") ? vars.get("ALCHEMY_KEY") : "";
@@ -14,7 +13,7 @@ const etherscanKeyBase = vars.has("ETHERSCAN_KEY_BASE")
   ? vars.get("ETHERSCAN_KEY_BASE")
   : "";
 
-const config: HardhatUserConfig & { abiExporter: AbiExporterUserConfig } = {
+const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.22",
     settings: {
@@ -51,12 +50,6 @@ const config: HardhatUserConfig & { abiExporter: AbiExporterUserConfig } = {
   },
   sourcify: {
     enabled: false,
-  },
-  abiExporter: {
-    path: "./subgraph/abis",
-    runOnCompile: true,
-    clear: true,
-    flat: true,
   },
 };
 

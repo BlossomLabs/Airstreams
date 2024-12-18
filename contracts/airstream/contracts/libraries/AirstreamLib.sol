@@ -10,13 +10,17 @@ struct AirstreamConfig {
     uint64  duration;
 }
 
+struct ClaimingWindow {
+    uint64  startDate;
+    uint64  duration;
+    address treasury;
+}
+
 struct AirstreamExtendedConfig {
     address superToken;
-    uint64  startDate;
-    uint16  initialRewardPct;
-    uint64  claimingWindow;
-    uint96  minimumClaims;
-    uint16  feePct;
+    ClaimingWindow claimingWindow;
+    uint24  initialRewardPPM;
+    uint24  feePPM;
 }
 
 library AirstreamLib {

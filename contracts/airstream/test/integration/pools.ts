@@ -4,14 +4,11 @@ import {
   mine,
   setBalance,
 } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
-import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 import { assert, expect } from "chai";
 import hre, { viem } from "hardhat";
 import { vars } from "hardhat/config";
 import { getAddress, parseEventLogs, parseUnits, zeroAddress } from "viem";
-
-import treeJSON from "../fixtures/merkle-tree.json";
-const tree = StandardMerkleTree.load(treeJSON as any);
+import { claimArgs } from "../utils";
 
 const ethxTokenAddress = getAddress(
   "0x4ac8bD1bDaE47beeF2D1c6Aa62229509b962Aa0d",
@@ -80,15 +77,17 @@ const deploy = async () => {
 
   const extendedConfig = {
     superToken: zeroAddress,
-    startDate: 0n,
-    initialRewardPct: 0,
-    claimingWindow: 0n,
-    minimumClaims: 0n,
-    feePct: 0,
+    claimingWindow: {
+      startDate: 0n,
+      duration: 0n,
+      treasury: zeroAddress,
+    },
+    initialRewardPPM: 0,
+    feePPM: 0,
   };
 
   // Create a new Airstream
-  const hash = await airstreamFactory.write.createAirstream([
+  const hash = await airstreamFactory.write.createExtendedAirstream([
     config,
     extendedConfig,
   ]);
@@ -107,13 +106,6 @@ const deploy = async () => {
     "GDAv1Forwarder",
     gdav1ForwarderAddress,
   );
-
-  // A helper function to get the claim arguments for a given index of the merkle tree
-  function claimArgs(index: number): [`0x${string}`, bigint, `0x${string}`[]] {
-    const [_, [account, amount]] = [...tree.entries()][index];
-    const proof = tree.getProof(index);
-    return [account, amount, proof as `0x${string}`[]];
-  }
 
   return {
     airstreamFactory,

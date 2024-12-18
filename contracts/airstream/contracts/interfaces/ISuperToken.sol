@@ -33,4 +33,10 @@ interface ISuperToken {
      *   otherwise it reverts.
      */
     function upgradeTo(address to, uint256 amount, bytes calldata userData) external;
+
+    /**
+     * @dev Get the host of the SuperToken
+     * @return host The host of the SuperToken
+     */
+    function getHost() external view returns (address);
 }

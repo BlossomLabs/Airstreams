@@ -133,14 +133,16 @@ describe("AirstreamFactory Contract Tests", () => {
 
       const extendedConfig = {
         superToken: zeroAddress,
-        startDate: 0n,
-        initialRewardPct: 0,
-        claimingWindow: 0n,
-        minimumClaims: 0n,
-        feePct: 0,
+        claimingWindow: {
+          startDate: 0n,
+          duration: 0n,
+          treasury: zeroAddress,
+        },
+        initialRewardPPM: 0,
+        feePPM: 0,
       };
 
-      const hash = await airstreamFactory.write.createAirstream([
+      const hash = await airstreamFactory.write.createExtendedAirstream([
         config,
         extendedConfig,
       ]);
@@ -164,15 +166,20 @@ describe("AirstreamFactory Contract Tests", () => {
       };
       const extendedConfig = {
         superToken: zeroAddress,
-        startDate: 0n,
-        initialRewardPct: 0n,
-        claimingWindow: 0n,
-        minimumClaims: 0n,
-        feePct: 0n,
+        claimingWindow: {
+          startDate: 0n,
+          duration: 0n,
+          treasury: zeroAddress,
+        },
+        initialRewardPPM: 0,
+        feePPM: 0,
       };
 
       await expect(
-        airstreamFactory.write.createAirstream([config, extendedConfig]),
+        airstreamFactory.write.createExtendedAirstream([
+          config,
+          extendedConfig,
+        ]),
       ).to.be.rejected;
     });
   });
