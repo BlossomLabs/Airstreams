@@ -7,12 +7,12 @@
     "lint": "eslint ."
   },
   "peerDependencies": {
-    "react": "^18"
+    "react": "^19"
   },
   "devDependencies": {
     "@repo/typescript-config": "*",
     "@types/node": "^20",
-    "@types/react": "^18",
+    "@types/react": "^19",
     "autoprefixer": "^10",
     "postcss": "^8",
     "postcss-load-config": "^6",

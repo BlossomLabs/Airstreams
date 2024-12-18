@@ -1,5 +1,5 @@
-@import '@fontsource/zen-dots/latin.css';
-@import '@fontsource/manrope/latin.css';
+@import "@fontsource/zen-dots/latin.css";
+@import "@fontsource/manrope/latin.css";
 
 @tailwind base;
 @tailwind components;
@@ -7,11 +7,10 @@
 
 @layer base {
   :root {
-    --font-header: 'Zen Dots', sans-serif;
-    --font-body: 'Manrope', sans-serif;
+    --font-header: "Zen Dots", sans-serif;
+    --font-body: "Manrope", sans-serif;
   }
 }
-
 
 @layer base {
   :root {
@@ -96,4 +95,3 @@
     appearance: textfield;
   }
 }
-
