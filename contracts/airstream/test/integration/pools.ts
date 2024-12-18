@@ -95,7 +95,7 @@ const deploy = async () => {
   const { airstream, controller, pool } = await airstreamFromTx(hash);
 
   // Get the deployed Airstream contract
-  const airstreamContract = await viem.getContractAt("Airstream", airstream);
+  const airstreamContract = await viem.getContractAt("IAirstream", airstream);
   const airstreamControllerContract = await viem.getContractAt(
     "AirstreamController",
     controller,

@@ -2,12 +2,12 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.22;
 
-import {Airstream} from "./Airstream.sol";
+import {BasicAirstream} from "./BasicAirstream.sol";
 import {AirstreamLib, AirstreamConfig, AirstreamExtendedConfig, ClaimingWindow} from "./libraries/AirstreamLib.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract AirstreamExtended is Airstream {
+contract AirstreamExtended is BasicAirstream {
     using AirstreamLib for uint256;
     using SafeERC20 for IERC20;
 
@@ -30,12 +30,12 @@ contract AirstreamExtended is Airstream {
     /* Claiming window: start date, duration, treasury address */
     ClaimingWindow public claimingWindow;
     /* Initial reward percentage (in parts per million) */
-    uint256 public initialRewardPPM;
+    uint24 public initialRewardPPM;
     /* Fee percentage (in parts per million) */
-    uint256 public feePPM;
+    uint24 public feePPM;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(address _gdav1Forwarder) Airstream(_gdav1Forwarder) {}
+    constructor(address _gdav1Forwarder) BasicAirstream(_gdav1Forwarder) {}
 
     /**
      * @notice Initialize the airstream
@@ -72,8 +72,8 @@ contract AirstreamExtended is Airstream {
         // If the airstream didn't start yet, start it and set the proper pool units
         if (startedAt == 0) {
             startedAt = uint64(block.timestamp);
-            pool.updateMemberUnits(address(this), unclaimedAmount.toPoolUnits());
-            pool.updateMemberUnits(address(owner()), 0);
+            _pool.updateMemberUnits(address(this), unclaimedAmount.toPoolUnits());
+            _pool.updateMemberUnits(address(owner()), 0);
         }
 
         uint256 extraRewards = amount * initialRewardPPM / 1e6;
@@ -102,10 +102,10 @@ contract AirstreamExtended is Airstream {
             revert NoUnclaimedTokens();
         }
 
-        pool.updateMemberUnits(address(this), 0);
-        pool.updateMemberUnits(claimingWindow.treasury, unclaimedAmount.toPoolUnits());
+        _pool.updateMemberUnits(address(this), 0);
+        _pool.updateMemberUnits(claimingWindow.treasury, unclaimedAmount.toPoolUnits());
 
-        IERC20 token = IERC20(pool.superToken());
+        IERC20 token = IERC20(_pool.superToken());
         uint256 balance = token.balanceOf(address(this));
         if (balance > 0) {
             token.transfer(claimingWindow.treasury, balance);
@@ -146,8 +146,8 @@ contract AirstreamExtended is Airstream {
         // - The owner (who's already streaming to this contract) should receive the flow back
         if (claimingWindow.startDate != 0) {
             startedAt = 0;
-            pool.updateMemberUnits(address(this), 0);
-            pool.updateMemberUnits(address(owner()), 1);
+            _pool.updateMemberUnits(address(this), 0);
+            _pool.updateMemberUnits(address(owner()), 1);
         }
     }
 

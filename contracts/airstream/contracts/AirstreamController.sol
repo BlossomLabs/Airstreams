@@ -8,7 +8,7 @@ import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/Pau
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {Airstream} from "./Airstream.sol";
+import {IAirstream} from "./interfaces/IAirstream.sol";
 import {GDAv1Forwarder} from "./interfaces/GDAv1Forwarder.sol";
 import {Withdrawable} from "./abstract/Withdrawable.sol";
 
@@ -16,7 +16,7 @@ contract AirstreamController is Initializable, PausableUpgradeable, OwnableUpgra
 
     error InvalidAirstreamOwner();
     address public immutable gdav1Forwarder;
-    Airstream public airstream;
+    IAirstream public airstream;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(address _gdav1Forwarder) {
@@ -35,7 +35,7 @@ contract AirstreamController is Initializable, PausableUpgradeable, OwnableUpgra
         __Pausable_init();
         __Ownable_init(_owner);
         __UUPSUpgradeable_init();
-        airstream = Airstream(_airstream);
+        airstream = IAirstream(_airstream);
 
         // Allow the airstream to transfer the initial allowance
         if (_initialAllowance > 0) {

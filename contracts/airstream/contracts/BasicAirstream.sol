@@ -9,6 +9,7 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import {IAirstream} from "./interfaces/IAirstream.sol";
 import {GDAv1Forwarder, PoolConfig} from "./interfaces/GDAv1Forwarder.sol";
 import {ISuperfluidPool} from "./interfaces/ISuperfluidPool.sol";
 import {Claimable} from "./abstract/Claimable.sol";
@@ -16,7 +17,7 @@ import {Withdrawable} from "./abstract/Withdrawable.sol";
 import {AirstreamLib, AirstreamConfig, AirstreamExtendedConfig, ClaimingWindow} from "./libraries/AirstreamLib.sol";
 import {RedirectLib} from "./libraries/RedirectLib.sol";
 
-contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UUPSUpgradeable, Claimable, Withdrawable, ReentrancyGuardUpgradeable {
+contract BasicAirstream is IAirstream, Initializable, PausableUpgradeable, OwnableUpgradeable, UUPSUpgradeable, Claimable, Withdrawable, ReentrancyGuardUpgradeable {
     using AirstreamLib for uint256;
     using RedirectLib for ISuperfluidPool;
 
@@ -32,7 +33,7 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
     /* Airstream name */
     string public name;
     /* Superfluid pool the airstream is attached to */
-    ISuperfluidPool public pool;
+    ISuperfluidPool internal _pool;
     /* Merkle root of the airstream */
     bytes32 private merkleRoot_;
     /* Unclaimed amount */
@@ -110,7 +111,7 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
                 revert InvalidRedirectTo(to[i]);
             }
         }
-        pool.redirectUnits(from, to, amounts);
+        _pool.redirectUnits(from, to, amounts);
     }
 
     /**
@@ -135,7 +136,7 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
      * @return The distribution token
      */
     function distributionToken() public view returns (address) {
-        return pool.superToken();
+        return _pool.superToken();
     }
 
     /**
@@ -144,7 +145,15 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
      * @return The allocation
      */
     function getAllocation(address account) public view returns (uint256) {
-        return AirstreamLib.fromPoolUnits(pool.getUnits(account));
+        return AirstreamLib.fromPoolUnits(_pool.getUnits(account));
+    }
+
+    function pool() public view returns (address) {
+        return address(_pool);
+    }
+
+    function owner() public view override(OwnableUpgradeable, IAirstream) returns (address) {
+        return super.owner();
     }
 
     function __Airstream_init(address _controller, AirstreamConfig memory _config) internal onlyInitializing {
@@ -160,7 +169,7 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
         startedAt = uint64(block.timestamp);
         flowRate = int96(_config.totalAmount / _config.duration);
         _createPool(_config.token, gdav1Forwarder);
-        emit AirstreamCreated(_config.name, address(pool));
+        emit AirstreamCreated(_config.name, address(_pool));
     }
 
     function _authorizeUpgrade(address newImplementation)
@@ -171,7 +180,7 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
 
     function _createPool(address _distributionToken, address _gdav1Forwarder) internal onlyInitializing {
         // Create a new pool using the GDAv1Forwarder
-        (bool _success, address _pool) = GDAv1Forwarder(_gdav1Forwarder)
+        (bool _success, address pool_) = GDAv1Forwarder(_gdav1Forwarder)
             .createPool(
                 _distributionToken,
                 address(this),
@@ -183,9 +192,9 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
         // Revert if pool creation fails
         if (!_success) revert PoolCreationFailed();
         // Set the Airstream's pool
-        pool = ISuperfluidPool(_pool);
-        pool.updateMemberUnits(address(this), unclaimedAmount.toPoolUnits());
-        GDAv1Forwarder(gdav1Forwarder).connectPool(_pool, "");
+        _pool = ISuperfluidPool(pool_);
+        _pool.updateMemberUnits(address(this), unclaimedAmount.toPoolUnits());
+        GDAv1Forwarder(gdav1Forwarder).connectPool(pool_, "");
     }
 
     function _claimAirstream(address account, uint256 amount, bytes32[] calldata proof) internal {
@@ -193,9 +202,9 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
         _claim(account, amount, proof);
         
         // Update pool units for claimer
-        pool.updateMemberUnits(account, amount.toPoolUnits());
+        _pool.updateMemberUnits(account, amount.toPoolUnits());
 
-        IERC20 token = IERC20(pool.superToken());
+        IERC20 token = IERC20(_pool.superToken());
 
         uint256 unclaimedBalance = token.balanceOf(address(this)) * amount / unclaimedAmount;
 
@@ -205,6 +214,6 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
 
         // Update contract's pool units and state
         unclaimedAmount -= amount;
-        pool.updateMemberUnits(address(this), unclaimedAmount.toPoolUnits());
+        _pool.updateMemberUnits(address(this), unclaimedAmount.toPoolUnits());
     }
 }

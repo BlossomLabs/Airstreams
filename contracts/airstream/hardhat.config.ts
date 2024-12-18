@@ -1,7 +1,6 @@
 import type { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-ignition-viem";
-import "hardhat-abi-exporter";
 import { vars } from "hardhat/config";
 
 const alchemyKey = vars.has("ALCHEMY_KEY") ? vars.get("ALCHEMY_KEY") : "";
