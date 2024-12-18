@@ -24,6 +24,8 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
     error InvalidDurationOrAmount();
     error NoUnclaimedTokens();
     error NotAirstreamExtended();
+    error InvalidRedirectFrom(address from);
+    error InvalidRedirectTo(address to);
     event AirstreamCreated(string name, address pool);
 
     address public immutable gdav1Forwarder;
@@ -98,6 +100,16 @@ contract Airstream is Initializable, PausableUpgradeable, OwnableUpgradeable, UU
      * @param amounts Amounts to redirect
      */
     function redirectRewards(address[] memory from, address[] memory to, uint256[] memory amounts) external onlyOwner {
+        for (uint256 i = 0; i < from.length; i++) {
+            if (from[i] == address(this)) {
+                revert InvalidRedirectFrom(from[i]);
+            }
+        }
+        for (uint256 i = 0; i < to.length; i++) {
+            if (to[i] == address(this)) {
+                revert InvalidRedirectTo(to[i]);
+            }
+        }
         pool.redirectUnits(from, to, amounts);
     }
 

@@ -45,9 +45,16 @@ function deployExtended() {
   return _deploy(extendedConfig);
 }
 
+function deployWithStartDateAndClosedClaimingWindow() {
+  return _deploy({
+    ...baseConfig,
+    claimingWindow: claimingWindowExtendedConfig,
+  });
+}
+
 function deployWithStartDateAndOpenEndedClaimingWindow() {
   return _deploy({
-    ...extendedConfig,
+    ...baseConfig,
     claimingWindow: {
       ...claimingWindowExtendedConfig,
       duration: 0,
@@ -67,19 +74,18 @@ function deployExtendedStartImmediately() {
   });
 }
 
-// function deployWithoutStartDateAndOpenEndedClaimingWindow() {
-//     const config = extendedConfig();
-//     const claimingWindow = claimingWindowExtendedConfig();
-//     return _deploy({
-//         ...config,
-//         claimingWindow: {
-//             ...claimingWindow,
-//             startDate: 0,
-//             duration: 0,
-//             treasury: zeroAddress,
-//         },
-//     });
-// }
+async function mintAndApproveUnclaimedAmount(
+  airstream: any,
+  superToken: any,
+  wallet1: any,
+) {
+  const totalAmount = await airstream.read.unclaimedAmount();
+  await superToken.write.mint([
+    wallet1.account.address,
+    (totalAmount * BigInt(extendedConfig.initialRewardPPM)) / BigInt(100_0000),
+  ]);
+  await superToken.write.approve([airstream.address, totalAmount]);
+}
 
 describe("AirstreamExtended", () => {
   beforeEach(async () => {
@@ -93,12 +99,31 @@ describe("AirstreamExtended", () => {
     });
 
     it("should allow to claim if the claiming window is open (extended config)", async () => {
-      const { airstream } = await loadFixture(deployExtended);
+      const { airstream } = await loadFixture(
+        deployWithStartDateAndClosedClaimingWindow,
+      );
       await expect(airstream.write.claim(claimArgs(19))).to.be.rejected;
       await time.increaseTo(
         extendedConfig.claimingWindow.startDate + minutes(1),
       );
       await expect(airstream.write.claim(claimArgs(19))).to.be.not.rejected;
+    });
+
+    it("should allow to stream back rewards to treasury after the claiming window is closed", async () => {
+      const { airstream, superToken, wallet1 } =
+        await loadFixture(deployExtended);
+      await mintAndApproveUnclaimedAmount(airstream, superToken, wallet1);
+      await superToken.write.mint([airstream.address, 100n]);
+      await time.increaseTo(
+        extendedConfig.claimingWindow.startDate +
+          extendedConfig.claimingWindow.duration +
+          minutes(1),
+      );
+      await airstream.write.streamBackToTreasury();
+      const balanceAfter = await superToken.read.balanceOf([
+        extendedConfig.claimingWindow.treasury,
+      ]);
+      expect(balanceAfter).to.equal(100n);
     });
 
     it("should revert if the start date is in the future", async () => {
@@ -113,18 +138,29 @@ describe("AirstreamExtended", () => {
   });
 
   describe("Initial Rewards", () => {
-    it("should be able to claim initial rewards (start immediately)", async () => {
-      const { airstream, superToken } = await loadFixture(
+    it("should allow to claim initial rewards (when starting immediately)", async () => {
+      const { airstream, superToken, wallet1 } = await loadFixture(
         deployExtendedStartImmediately,
       );
-      const totalAmount = await airstream.read.unclaimedAmount();
-      await superToken.write.mint([
-        airstream.address,
-        (totalAmount * BigInt(extendedConfig.initialRewardPPM)) /
-          BigInt(100_0000),
-      ]);
+      await mintAndApproveUnclaimedAmount(airstream, superToken, wallet1);
       const [addr, amount] = claimArgs(19);
       await airstream.write.claim(claimArgs(19));
+      const balanceAfter = await superToken.read.balanceOf([addr]);
+      expect(balanceAfter).to.equal(
+        (BigInt(amount) * BigInt(extendedConfig.initialRewardPPM)) /
+          BigInt(100_0000),
+      );
+    });
+
+    it("should allow to claim initial rewards (when starting in a future date)", async () => {
+      const { airstream, superToken, wallet1 } =
+        await loadFixture(deployExtended);
+      await time.increaseTo(
+        extendedConfig.claimingWindow.startDate + minutes(1),
+      );
+      await mintAndApproveUnclaimedAmount(airstream, superToken, wallet1);
+      await expect(airstream.write.claim(claimArgs(19))).to.be.not.rejected;
+      const [addr, amount] = claimArgs(19);
       const balanceAfter = await superToken.read.balanceOf([addr]);
       expect(balanceAfter).to.equal(
         (BigInt(amount) * BigInt(extendedConfig.initialRewardPPM)) /

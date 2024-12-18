@@ -6,6 +6,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {Airstream} from "./Airstream.sol";
 import {GDAv1Forwarder} from "./interfaces/GDAv1Forwarder.sol";
@@ -28,12 +29,18 @@ contract AirstreamController is Initializable, PausableUpgradeable, OwnableUpgra
      * @dev The airstream contract is initialized in paused state
      * @param _owner The owner of the controller
      * @param _airstream The address of the airstream contract
+     * @param _initialAllowance The initial allowance of the airstream
      */
-    function initialize(address _owner, address _airstream) public initializer {
+    function initialize(address _owner, address _airstream, uint256 _initialAllowance) public initializer {
         __Pausable_init();
         __Ownable_init(_owner);
         __UUPSUpgradeable_init();
         airstream = Airstream(_airstream);
+
+        // Allow the airstream to transfer the initial allowance
+        if (_initialAllowance > 0) {
+            IERC20(airstream.distributionToken()).approve(address(airstream), _initialAllowance);
+        }
 
         // Start paused
         _pause();

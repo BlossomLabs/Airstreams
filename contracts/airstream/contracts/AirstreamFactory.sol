@@ -63,19 +63,18 @@ contract AirstreamFactory {
             config.token = _getSuperTokenAddress(config.token);
         }
 
+        uint256 initialAllowance = config.totalAmount * extendedConfig.initialRewardPPM / 1e6;
+
         // Create proxies first to get addresses
         AirstreamExtended airstream = AirstreamExtended(payable(address(new ERC1967Proxy(address(implementation), new bytes(0)))));
         AirstreamController controller = AirstreamController(payable(address(new ERC1967Proxy(address(controllerImplementation), new bytes(0)))));
-        // AirstreamExtension extension = AirstreamExtension(payable(address(new ERC1967Proxy(address(extensionImplementation), new bytes(0)))));
 
         // Initialize airstream and controller
-        // extension.initialize(address(airstream), extendedConfig);
         airstream.initialize(address(controller), config, extendedConfig);
-        controller.initialize(address(this), address(airstream));
+        controller.initialize(address(this), address(airstream), initialAllowance);
 
         // Wrap (if necessary) and transfer tokens to controller
         _sendWrappedTokens(token, config.token, address(controller), config.totalAmount);
-        uint256 immediateTransferableAmount = config.totalAmount * extendedConfig.initialRewardPPM / 1e6; // TODO: Be careful with rounding errors
 
         // Start the airstream and transfer ownership
         controller.resumeAirstream();

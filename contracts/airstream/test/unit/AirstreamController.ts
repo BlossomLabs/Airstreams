@@ -1,8 +1,7 @@
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
-import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 import { expect } from "chai";
 import { viem } from "hardhat";
-import { getAddress, parseUnits, zeroAddress } from "viem";
+import { getAddress, parseAbi, parseUnits, zeroAddress } from "viem";
 import { expectEvent } from "../utils";
 
 import { encodeFunctionData } from "viem";
@@ -23,6 +22,7 @@ const deploy = async () => {
   async function deployAirstreamController(
     owner: `0x${string}`,
     airstream: `0x${string}`,
+    initialAllowance: bigint,
   ) {
     const proxy = await viem.deployContract("ERC1967Proxy", [
       controllerImplementation.address,
@@ -33,7 +33,7 @@ const deploy = async () => {
           ),
         ], // initialize function
         functionName: "initialize",
-        args: [owner, airstream],
+        args: [owner, airstream, initialAllowance],
       }),
     ]);
     return viem.getContractAt("AirstreamController", proxy.address);
@@ -47,6 +47,7 @@ const deploy = async () => {
   const controller = await deployAirstreamController(
     wallet1.account.address,
     airstreamMock.address,
+    0n,
   );
 
   //   await superToken.write.mint([controller.address, parseUnits("100", 18)]);
@@ -115,6 +116,32 @@ describe("AirstreamController Contract Tests", () => {
       await expect(controller.write.pauseAirstream()).to.be.rejectedWith(
         "EnforcedPause",
       );
+    });
+  });
+
+  describe("Redirect flows", () => {
+    it("should redirect the reward to the new address", async () => {
+      const { controller, airstreamMock, wallet1 } = await loadFixture(deploy);
+      await controller.write.redirectReward([
+        airstreamMock.address,
+        zeroAddress,
+      ]);
+      // Same as: controller.write.redirectRewards([[airstreamMock.address], [zeroAddress]]);
+      // But hardhat-viem doesn't support overloading functions with different number of arguments
+      await wallet1.writeContract({
+        address: controller.address,
+        abi: parseAbi([
+          "function redirectRewards(address[] to, address[] from) external",
+        ]),
+        functionName: "redirectRewards",
+        args: [[airstreamMock.address], [zeroAddress]],
+      });
+      await controller.write.redirectRewards([
+        [airstreamMock.address],
+        [zeroAddress],
+        [1n],
+      ]);
+      expect(await airstreamMock.read.redirectRewardsCalled()).to.equal(3n);
     });
   });
 

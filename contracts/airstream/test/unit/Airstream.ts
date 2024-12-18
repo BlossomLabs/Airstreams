@@ -44,13 +44,13 @@ describe("Airstream Contract Tests", () => {
 
   describe("Redirection", () => {
     it("should allow the admin to redirect units", async () => {
-      const { airstream, addr1 } = await loadFixture(deploy);
-      await airstream.write.redirectRewards([[airstream.address], [addr1], []]);
+      const { airstream, addr1, addr2 } = await loadFixture(deploy);
+      await airstream.write.redirectRewards([[addr1], [addr2], []]);
     });
     it("should revert if called by a non-admin", async () => {
-      const { airstream, addr2 } = await loadFixture(deploy);
+      const { airstream, addr1, addr2 } = await loadFixture(deploy);
       await expect(
-        airstream.write.redirectRewards([[airstream.address], [addr2], []], {
+        airstream.write.redirectRewards([[addr1], [addr2], []], {
           account: addr2,
         }),
       ).to.be.rejected;

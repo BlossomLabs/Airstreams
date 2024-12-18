@@ -5,9 +5,11 @@ pragma solidity ^0.8.22;
 import {Airstream} from "./Airstream.sol";
 import {AirstreamLib, AirstreamConfig, AirstreamExtendedConfig, ClaimingWindow} from "./libraries/AirstreamLib.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract AirstreamExtended is Airstream {
     using AirstreamLib for uint256;
+    using SafeERC20 for IERC20;
 
     enum Stage {
         ClaimsNotStarted,
@@ -75,7 +77,9 @@ contract AirstreamExtended is Airstream {
         }
 
         uint256 extraRewards = amount * initialRewardPPM / 1e6;
-        // TODO: Transfer the extra rewards to the recipient
+        if (extraRewards > 0) {
+            IERC20(distributionToken()).safeTransferFrom(address(owner()), address(account), extraRewards);
+        }
         _claimAirstream(account, amount, proof);
     }
 
@@ -102,7 +106,15 @@ contract AirstreamExtended is Airstream {
         pool.updateMemberUnits(claimingWindow.treasury, unclaimedAmount.toPoolUnits());
 
         IERC20 token = IERC20(pool.superToken());
-        token.transfer(claimingWindow.treasury, token.balanceOf(address(this)));
+        uint256 balance = token.balanceOf(address(this));
+        if (balance > 0) {
+            token.transfer(claimingWindow.treasury, balance);
+        }
+
+        uint256 allowance = token.allowance(address(this), address(owner()));
+        if (allowance > 0) {
+            token.safeTransferFrom(address(owner()), claimingWindow.treasury, allowance);
+        }
 
         unclaimedAmount = 0;
     }
