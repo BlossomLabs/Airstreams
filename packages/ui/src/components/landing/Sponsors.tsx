@@ -1,3 +1,5 @@
+import type { JSX } from "react";
+
 interface SponsorProps {
   logo: JSX.Element;
   href: string;

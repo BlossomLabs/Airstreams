@@ -4,6 +4,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/ui/components/ui/card";
+import type { JSX } from "react";
 
 interface FeaturesProps {
   title: string;

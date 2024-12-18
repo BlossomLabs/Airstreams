@@ -3,11 +3,10 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
+    "check": "turbo check && biome check . --write",
     "dev": "turbo dev",
     "test": "turbo test",
     "test:coverage": "turbo test:coverage",
-    "format-and-lint": "biome check .",
-    "format-and-lint:fix": "biome check . --write",
     "ui": "bun run --cwd packages/ui ui",
     "prepare": "husky",
     "install:web": "bun install --cwd apps/web",

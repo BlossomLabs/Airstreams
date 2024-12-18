@@ -7,9 +7,9 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["build/**"]
     },
-    "//#format-and-lint": {},
-    "//#format-and-lint:fix": {
-      "cache": false
+    "check": {
+      "dependsOn": ["^check"],
+      "outputs": []
     },
     "dev": {
       "cache": false,

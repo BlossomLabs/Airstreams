@@ -1,2 +1,2 @@
-bun run format-and-lint:fix
+bun run check
 git update-index --again
