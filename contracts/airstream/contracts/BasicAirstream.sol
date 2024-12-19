@@ -10,8 +10,8 @@ import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/ut
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IAirstream} from "./interfaces/IAirstream.sol";
-import {GDAv1Forwarder, PoolConfig} from "./interfaces/GDAv1Forwarder.sol";
-import {ISuperfluidPool} from "./interfaces/ISuperfluidPool.sol";
+import {GDAv1Forwarder, PoolConfig} from "./interfaces/gdav1/GDAv1Forwarder.sol";
+import {ISuperfluidPool} from "./interfaces/gdav1/ISuperfluidPool.sol";
 import {Claimable} from "./abstract/Claimable.sol";
 import {Withdrawable} from "./abstract/Withdrawable.sol";
 import {AirstreamLib, AirstreamConfig, AirstreamExtendedConfig, ClaimingWindow} from "./libraries/AirstreamLib.sol";

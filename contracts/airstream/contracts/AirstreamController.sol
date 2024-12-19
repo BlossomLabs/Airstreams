@@ -9,7 +9,7 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IAirstream} from "./interfaces/IAirstream.sol";
-import {GDAv1Forwarder} from "./interfaces/GDAv1Forwarder.sol";
+import {GDAv1Forwarder} from "./interfaces/gdav1/GDAv1Forwarder.sol";
 import {Withdrawable} from "./abstract/Withdrawable.sol";
 
 contract AirstreamController is Initializable, PausableUpgradeable, OwnableUpgradeable, UUPSUpgradeable, Withdrawable {

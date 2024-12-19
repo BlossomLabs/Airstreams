@@ -2,7 +2,7 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.20;
 
-import {PoolConfig} from "../interfaces/GDAv1Forwarder.sol";
+import {PoolConfig} from "../interfaces/gdav1/GDAv1Forwarder.sol";
 import {PoolMock} from "./PoolMock.sol";
 
 contract GDAv1ForwarderMock {

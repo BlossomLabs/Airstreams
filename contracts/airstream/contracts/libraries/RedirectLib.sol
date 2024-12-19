@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPLv3
 pragma solidity ^0.8.22;
 
-import {ISuperfluidPool} from "../interfaces/ISuperfluidPool.sol";
+import {ISuperfluidPool} from "../interfaces/gdav1/ISuperfluidPool.sol";
 import {AirstreamLib} from "./AirstreamLib.sol";
 
 library RedirectLib {

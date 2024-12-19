@@ -9,8 +9,8 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 import {AirstreamExtended} from "./AirstreamExtended.sol";
 import {AirstreamController} from "./AirstreamController.sol";
 import {AirstreamConfig, AirstreamExtendedConfig, ClaimingWindow} from "./libraries/AirstreamLib.sol";
-import {ISuperTokenFactory} from "./interfaces/ISuperTokenFactory.sol";
-import {ISuperToken} from "./interfaces/ISuperToken.sol";
+import {ISuperTokenFactory} from "./interfaces/superfluid/ISuperTokenFactory.sol";
+import {ISuperToken} from "./interfaces/superfluid/ISuperToken.sol";
 
 contract AirstreamFactory {
     using SafeERC20 for IERC20;

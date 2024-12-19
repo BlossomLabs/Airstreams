@@ -3,8 +3,8 @@
 pragma solidity ^0.8.20;
 
 import {SuperTokenMock} from "./SuperTokenMock.sol";
-import {ISuperTokenFactory} from "../interfaces/ISuperTokenFactory.sol";
-import {ISuperToken} from "../interfaces/ISuperToken.sol";
+import {ISuperTokenFactory} from "../interfaces/superfluid/ISuperTokenFactory.sol";
+import {ISuperToken} from "../interfaces/superfluid/ISuperToken.sol";
 
 contract SuperTokenFactoryMock is ISuperTokenFactory {
     mapping(address => address) internal _canonicalWrapperSuperTokens;
