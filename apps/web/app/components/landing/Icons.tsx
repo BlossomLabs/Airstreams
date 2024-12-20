@@ -3,9 +3,9 @@ export const MedalIcon = () => {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 128 128"
-      className="w-14 fill-primary"
+      className="w-14 fill-primary-foreground"
     >
-      <title>Free Icons</title>
+      <title>Medal</title>
       <g id="Layer_8" data-name="Layer 8">
         <path
           className="cls-1"
@@ -81,9 +81,9 @@ export const WalletIcon = () => {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 128 128"
-      className="w-12 fill-primary"
+      className="w-12 fill-primary-foreground"
     >
-      <title>Free Icons</title>
+      <title>Wallet</title>
       <g id="Layer_21" data-name="Layer 21">
         <path
           className="cls-1"
@@ -171,9 +171,9 @@ export const ChartIcon = () => {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 128 128"
-      className="w-12 fill-primary"
+      className="w-12 fill-primary-foreground"
     >
-      <title>Free Icons</title>
+      <title>Chart</title>
       <g id="Layer_10" data-name="Layer 10">
         <path
           className="cls-1"

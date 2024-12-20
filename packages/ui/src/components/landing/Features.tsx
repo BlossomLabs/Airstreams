@@ -39,7 +39,7 @@ export const Features = ({
             {featuresList.map(({ icon, title, description }: FeaturesProps) => (
               <Card key={title} className={className}>
                 <CardHeader className="space-y-1 flex items-center md:flex-row md:justify-start md:items-start gap-4">
-                  <div className="mt-1 bg-primary/20 p-1 rounded-2xl">
+                  <div className="mt-1 bg-primary/80 p-1 rounded-2xl">
                     {icon}
                   </div>
                   <div className="text-center md:text-left">

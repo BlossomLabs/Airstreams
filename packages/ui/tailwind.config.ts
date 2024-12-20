@@ -20,6 +20,12 @@ const config = {
       },
     },
     extend: {
+      fontSize: {
+        sm: "1rem",
+        base: "1.25rem",
+        lg: "1.5rem",
+        xl: "1.75rem",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
