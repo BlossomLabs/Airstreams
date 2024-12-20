@@ -27,7 +27,7 @@ const sponsors = [
 
 export const Sponsors = () => {
   return (
-    <div className="container flex flex-col sm:flex-row justify-between items-center max-w-4xl mx-auto">
+    <div className="container flex flex-col sm:flex-row justify-between items-center max-w-4xl mx-auto pb-24 sm:pb-0">
       <SponsorsUI text="Built by" sponsors={builders} />
       <SponsorsUI text="Powered by" sponsors={sponsors} />
     </div>

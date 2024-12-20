@@ -10,8 +10,8 @@ export const Sponsors = ({
   sponsors,
 }: { text: string; sponsors: SponsorProps[] }) => {
   return (
-    <section id="sponsors" className="container pt-24 sm:py-32">
-      <h2 className="text-center text-md lg:text-xl font-bold mb-8 text-primary">
+    <section className="container pt-24 sm:py-32">
+      <h2 className="text-center text-md lg:text-lg font-bold mb-8 text-primary">
         {text}
       </h2>
 

@@ -12,7 +12,7 @@ export const Cta = () => {
               Information?{" "}
             </span>
           </h2>
-          <p className="text-muted-foreground text-xl mt-4 mb-8 lg:mb-0">
+          <p className="text-muted-foreground md:text-lg mt-4 mb-8">
             Partnering with Superfluid, we deliver the ultimate airstreaming
             experience. Request a demo to see it in action or learn more about
             Superfluid technology.

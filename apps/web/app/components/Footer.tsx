@@ -5,7 +5,7 @@ export const Footer = () => {
     <footer id="footer">
       <hr className="w-11/12 mx-auto" />
 
-      <section className="container py-20 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-x-12 gap-y-8">
+      <section className="container py-20 grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-6 gap-x-12 gap-y-8">
         <div className="col-span-full xl:col-span-2">
           <a
             rel="noreferrer noopener"
@@ -17,7 +17,7 @@ export const Footer = () => {
         </div>
 
         <div className="flex flex-col gap-2">
-          <h3 className="font-bold text-lg">Follow Us</h3>
+          <h3 className="font-bold text-md sm:text-lg">Follow Us</h3>
           <div>
             <a
               rel="noreferrer noopener"
@@ -40,7 +40,7 @@ export const Footer = () => {
         </div>
 
         <div className="flex flex-col gap-2">
-          <h3 className="font-bold text-lg">Blossom Labs</h3>
+          <h3 className="font-bold text-md sm:text-lg">Blossom Labs</h3>
           <div>
             <a
               rel="noreferrer noopener"
@@ -53,7 +53,7 @@ export const Footer = () => {
         </div>
 
         <div className="flex flex-col gap-2">
-          <h3 className="font-bold text-lg">Other tools</h3>
+          <h3 className="font-bold text-md sm:text-lg">Other tools</h3>
           <div>
             <a
               rel="noreferrer noopener"

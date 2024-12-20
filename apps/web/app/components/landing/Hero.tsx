@@ -24,14 +24,16 @@ export const Hero = () => {
           </h2>
         </main>
 
-        <p className="text-xl text-muted-foreground md:w-10/12 mx-auto lg:mx-0">
+        <p className="text-lg lg:text-xl text-muted-foreground md:w-10/12 mx-auto">
           Airstreams deliver continuous airdrops, encouraging active user
           engagement and mitigating sudden price drops.
         </p>
 
-        <div className="space-y-4 md:space-y-0 md:space-x-4">
+        <div className="pt-6 space-y-4 md:space-y-0 md:space-x-4">
           <Button
-            className="w-full md:w-1/3"
+            className={`w-full md:w-1/3 ${buttonVariants({
+              size: "lg",
+            })}`}
             onClick={() => {
               navigate("/create");
             }}
@@ -45,6 +47,7 @@ export const Hero = () => {
             target="_blank"
             className={`w-full md:w-1/3 ${buttonVariants({
               variant: "outline",
+              size: "lg",
             })}`}
           >
             Github Repository
