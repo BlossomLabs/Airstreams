@@ -62,17 +62,8 @@ export const meta: Route.MetaFunction = () => [
 ];
 
 export function HydrateFallback() {
-  return (
-    <html lang="en">
-      <head>
-        <Meta />
-        <Links />
-      </head>
-      <body className="bg-background">
-        <Scripts />
-      </body>
-    </html>
-  );
+  // It loads the page just with the layout
+  return <></>;
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -84,7 +75,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="bg-background">
         {children}
         <ScrollRestoration />
         <Scripts />

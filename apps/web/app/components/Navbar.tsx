@@ -1,6 +1,6 @@
 import { SITE_NAME } from "@/utils/site";
 import { Link } from "react-router";
-import { Connect } from "./Connect";
+import { ConnectButton } from "./ConnectButton";
 
 export function Navbar() {
   return (
@@ -13,7 +13,7 @@ export function Navbar() {
       </Link>
 
       <div className="flex gap-2 items-center">
-        <Connect />
+        <ConnectButton />
       </div>
     </header>
   );

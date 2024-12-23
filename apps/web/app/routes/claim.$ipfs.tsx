@@ -1,4 +1,4 @@
-import { Connect } from "@/components/Connect";
+import { ConnectButton } from "@/components/ConnectButton";
 import FormCard from "@/components/form/shared/FormCard";
 
 import { sendClaimAirstreamTx } from "@/utils/airstream";
@@ -104,7 +104,7 @@ function ClaimPage() {
             description="Connect your wallet to check if you're eligible for this AirStream. Great surprises might be waiting for you!"
           >
             <div className="flex justify-center">
-              <Connect />
+              <ConnectButton />
               {/* <Button
                 className="py-3 px-6 rounded-md w-full md:w-auto"
                 size="xl"
