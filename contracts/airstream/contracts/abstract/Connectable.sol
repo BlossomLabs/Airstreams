@@ -42,7 +42,7 @@ abstract contract Connectable is IUserDefinedMacro, IAirstream {
         operations[0] = ISuperfluid.Operation({
             operationType: BatchOperation.OPERATION_TYPE_SIMPLE_FORWARD_CALL,
             target: address(this),
-            data: abi.encode(claimCallData, new bytes(0))
+            data: claimCallData
         });
 
         // connect pool

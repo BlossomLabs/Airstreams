@@ -142,7 +142,7 @@ describe("Integration Tests: Pools", () => {
         {
           forking: {
             jsonRpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${vars.get("ALCHEMY_KEY")}`,
-            blockNumber: 125_042_537,
+            blockNumber: 130_178_000,
           },
         },
       ],
@@ -270,14 +270,6 @@ describe("Integration Tests: Pools", () => {
         {
           account: claimArgs(0)[0],
         },
-      );
-
-      // TODO: Waiting for Superfluid to fix the macro forwarding issue
-      // Until then, we need to claim the stream manually
-      await airstreamContract.write.claim(claimArgs(0));
-      await gdav1ForwarderContract.write.connectPool(
-        [poolContract.address, ""],
-        { account: claimArgs(0)[0] },
       );
 
       expect(
