@@ -1,3 +1,5 @@
 {
-  "distributionToken": "0x46fd5cfB4c12D87acD3a13e92BAa53240C661D93"
+  "AirstreamFactory": {
+    "superTokenFactory": "0xe20B9a38E0c96F61d1bA6b42a61512D56Fea1Eb3"
+  }
 }

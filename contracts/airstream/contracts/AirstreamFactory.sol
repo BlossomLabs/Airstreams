@@ -21,15 +21,15 @@ contract AirstreamFactory {
 
     address public immutable gdav1Forwarder;
     address public immutable superTokenFactory;
-    AirstreamExtended immutable implementation;
-    AirstreamController immutable controllerImplementation;
+    AirstreamExtended public immutable airstreamImplementation;
+    AirstreamController public immutable controllerImplementation;
 
     constructor(address _gdav1Forwarder, address _superTokenFactory) {
         if (!_isContract(_gdav1Forwarder)) revert GDAv1ForwarderMustBeAContract();
         if (!_isContract(_superTokenFactory)) revert SuperTokenFactoryMustBeAContract();
         gdav1Forwarder = _gdav1Forwarder;
         superTokenFactory = _superTokenFactory;
-        implementation = new AirstreamExtended(gdav1Forwarder);
+        airstreamImplementation = new AirstreamExtended(gdav1Forwarder);
         controllerImplementation = new AirstreamController(gdav1Forwarder);
     }
 
@@ -66,7 +66,7 @@ contract AirstreamFactory {
         uint256 initialAllowance = config.totalAmount * extendedConfig.initialRewardPPM / 1e6;
 
         // Create proxies first to get addresses
-        AirstreamExtended airstream = AirstreamExtended(payable(address(new ERC1967Proxy(address(implementation), new bytes(0)))));
+        AirstreamExtended airstream = AirstreamExtended(payable(address(new ERC1967Proxy(address(airstreamImplementation), new bytes(0)))));
         AirstreamController controller = AirstreamController(payable(address(new ERC1967Proxy(address(controllerImplementation), new bytes(0)))));
 
         // Initialize airstream and controller

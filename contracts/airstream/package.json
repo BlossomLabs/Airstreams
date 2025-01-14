@@ -15,6 +15,8 @@
     "deploy:base": "hardhat ignition deploy ignition/modules/AirstreamFactory.ts --network base --strategy create2 --parameters ignition/parameters/base.json",
     "dev": "hardhat node",
     "test": "hardhat test --network hardhat",
-    "test:coverage": "SOLIDITY_COVERAGE=true hardhat coverage"
+    "test:coverage": "SOLIDITY_COVERAGE=true hardhat coverage",
+    "verify:sepolia": "hardhat ignition verify chain-11155111",
+    "verify:base": "hardhat ignition verify chain-8453"
   }
 }

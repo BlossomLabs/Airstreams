@@ -11,10 +11,11 @@ bun run deploy:<network>
 In order to verify the contracts, follow the steps below:
 
 ```shell
-npx hardhat vars set ETHERSCAN_KEY_OPTIMISM # API key from optimistic.etherscan.io
+npx hardhat vars set ETHERSCAN_KEY_SEPOLIA # API key from sepolia.etherscan.io
 # or
 npx hardhat vars set ETHERSCAN_KEY_BASE # API key from basescan.org
 
-npx hardhat verify --network <network> <factoryAddress> 0x6DA13Bde224A05a288748d857b9e7DDEffd1dE08
+bun run verify:<network>
 npx hardhat verify --network <network> <airstreamAddress> 0x6DA13Bde224A05a288748d857b9e7DDEffd1dE08
+npx hardhat verify --network <network> <controllerAddress> 0x6DA13Bde224A05a288748d857b9e7DDEffd1dE08
 ```
