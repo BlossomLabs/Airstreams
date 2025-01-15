@@ -17,6 +17,7 @@ import { Button } from "@repo/ui/components/ui/button";
 import { Form } from "@repo/ui/components/ui/form";
 import { ToastAction } from "@repo/ui/components/ui/toast";
 import { useToast } from "@repo/ui/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useAccount } from "wagmi";
 
@@ -69,6 +70,7 @@ function CreatePage() {
       toast({
         title: "Airstream created",
         variant: "default",
+        duration: 60000,
         action: (
           <ToastAction
             onClick={() => navigate(`/claim/${cid}`)}
@@ -89,6 +91,8 @@ function CreatePage() {
       downloadMerkleTree(values.name, recipients, airstream, chain.id);
     }
   }
+
+  const isSubmitting = form.formState.isSubmitting;
 
   return (
     <Form {...form}>
@@ -113,8 +117,16 @@ function CreatePage() {
               type="submit"
               className="py-3 px-6 rounded-md w-full md:w-auto"
               size="xl"
+              disabled={isSubmitting}
             >
-              Create Airstream
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating Airstream...
+                </>
+              ) : (
+                "Create Airstream"
+              )}
             </Button>
           </div>
         </div>

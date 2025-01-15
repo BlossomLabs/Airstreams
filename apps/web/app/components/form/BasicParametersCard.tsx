@@ -55,7 +55,7 @@ function BasicParametersCard({ form }: { form: Form }) {
           form={form}
           name="airstreamDuration.unit"
           placeholder="Select a unit"
-          className="mt-5"
+          className="mt-6"
           options={[
             { value: "years", label: "Years" },
             { value: "months", label: "Months" },

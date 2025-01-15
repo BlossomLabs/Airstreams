@@ -19,11 +19,8 @@ export const formSchema = z.object({
     .array(
       z.object({
         // Tokenholders
-        address: z
-          .string()
-          .startsWith("0x")
-          .length(42)
-          .or(z.string().endsWith(".eth")), // Address or ENS name
+        address: z.string().startsWith("0x").length(42),
+        //.or(z.string().endsWith(".eth")), // Address or ENS name (disabled)
         amount: z.coerce.number().gt(0), // Amount of tokens
       }),
     )
