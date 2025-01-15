@@ -6,7 +6,7 @@ import {
   getRecipients,
 } from "@/utils/airstream";
 import { type FormValues, useCreateAirstreamForm } from "@/utils/form";
-import { downloadMerkleTree } from "@/utils/merkletree";
+import { downloadMerkleTree, uploadMerkleTreeToIpfs } from "@/utils/merkletree";
 import {
   processTxErrorToast,
   sendCreateAirstreamTxErrorToast,
@@ -15,7 +15,9 @@ import {
 } from "@/utils/toasts";
 import { Button } from "@repo/ui/components/ui/button";
 import { Form } from "@repo/ui/components/ui/form";
+import { ToastAction } from "@repo/ui/components/ui/toast";
 import { useToast } from "@repo/ui/hooks/use-toast";
+import { useNavigate } from "react-router";
 import { useAccount } from "wagmi";
 
 function CreatePage() {
@@ -23,6 +25,7 @@ function CreatePage() {
   const form = useCreateAirstreamForm();
   const { address, chain } = useAccount();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   async function onSubmit(values: FormValues) {
     console.log(values);
@@ -56,12 +59,35 @@ function CreatePage() {
     }
     const airstream = result;
 
-    downloadMerkleTree(recipients, airstream, "sepolia");
-    toast({
-      title: "Airstream created",
-      description: <>{airstream}</>,
-      variant: "default",
-    });
+    try {
+      const cid = await uploadMerkleTreeToIpfs(
+        values.name,
+        recipients,
+        airstream,
+        chain.id,
+      );
+      toast({
+        title: "Airstream created",
+        variant: "default",
+        action: (
+          <ToastAction
+            onClick={() => navigate(`/claim/${cid}`)}
+            altText="Visit airstream page"
+          >
+            Visit airstream page
+          </ToastAction>
+        ),
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error uploading merkle tree to IPFS",
+        description: "Upload it manually, please.",
+        variant: "destructive",
+      });
+
+      downloadMerkleTree(values.name, recipients, airstream, chain.id);
+    }
   }
 
   return (

@@ -2,7 +2,6 @@ import type { FormValues } from "@/utils/form";
 import { getMerkleRoot } from "@/utils/merkletree";
 import { getTimeInSeconds } from "@/utils/time";
 import {
-  type PublicClient,
   type TransactionReceipt,
   getAddress,
   isAddress,

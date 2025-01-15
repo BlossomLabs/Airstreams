@@ -20,7 +20,6 @@ function useWriteContractsSync() {
           confirmations: 1,
         }),
       );
-      console.log("receipt", receipts[receipts.length - 1]);
     }
     return receipts;
   }

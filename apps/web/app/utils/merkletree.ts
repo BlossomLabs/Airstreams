@@ -1,5 +1,5 @@
 import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
-import { getAddress } from "viem";
+import { uploadJsonToIpfs } from "./ipfs";
 
 type Recipient = { address: `0x${string}`; amount: bigint };
 
@@ -22,10 +22,11 @@ export function getProof(json: any, address: `0x${string}`) {
   return null;
 }
 
-export function downloadMerkleTree(
+function createMerkleTreeJson(
+  name: string,
   recipients: Recipient[],
   contract: `0x${string}`,
-  chain: string,
+  chainId: number,
 ) {
   const tree = StandardMerkleTree.of(
     recipients.map((recipient) => [recipient.address, recipient.amount]),
@@ -33,10 +34,21 @@ export function downloadMerkleTree(
   );
   const json = tree.dump() as any;
   json.contract = contract;
-  json.chain = chain;
+  json.chainId = chainId;
+  json.name = name;
   const content = JSON.stringify(json, (_, value) =>
     typeof value === "bigint" ? String(value) : value,
   );
+  return content;
+}
+
+export function downloadMerkleTree(
+  name: string,
+  recipients: Recipient[],
+  contract: `0x${string}`,
+  chainId: number,
+) {
+  const content = createMerkleTreeJson(name, recipients, contract, chainId);
 
   // Create a Blob from the content
   const blob = new Blob([content], { type: "application/json" });
@@ -47,7 +59,7 @@ export function downloadMerkleTree(
   // Create a temporary link and set the download attribute
   const link = document.createElement("a");
   link.href = url;
-  link.download = "merkle-tree.json";
+  link.download = `${name}-airstream.json`;
 
   // Append link to the body and trigger click for download
   document.body.appendChild(link);
@@ -56,4 +68,15 @@ export function downloadMerkleTree(
   // Clean up: remove the link and release the object URL
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+export async function uploadMerkleTreeToIpfs(
+  name: string,
+  recipients: Recipient[],
+  contract: `0x${string}`,
+  chainId: number,
+) {
+  const json = createMerkleTreeJson(name, recipients, contract, chainId);
+  const cid = await uploadJsonToIpfs(`${name}-airstream.json`, json);
+  return cid;
 }
