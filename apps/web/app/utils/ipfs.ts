@@ -1,4 +1,4 @@
-import { PinataSDK } from "pinata";
+import { PinataSDK } from "pinata-web3";
 
 const pinata =
   import.meta.env.VITE_PINATA_JWT && import.meta.env.VITE_PINATA_GATEWAY
@@ -17,5 +17,5 @@ export async function uploadJsonToIpfs(filename: string, json: string) {
   const name = filename.endsWith(".json") ? filename : `${filename}.json`;
   const file = new File([json], name, { type: "text/json" });
   const upload = await pinata.upload.file(file);
-  return upload.cid;
+  return upload.IpfsHash;
 }

@@ -2,7 +2,9 @@ import type { FormValues } from "@/utils/form";
 import { getMerkleRoot } from "@/utils/merkletree";
 import { getTimeInSeconds } from "@/utils/time";
 import {
+  type PublicClient,
   type TransactionReceipt,
+  encodeAbiParameters,
   getAddress,
   isAddress,
   parseAbi,
@@ -108,30 +110,48 @@ export async function createAirstream(
   return airstreamAddress;
 }
 
-export async function sendClaimAirstreamTx(
-  writeContract: any,
+export async function isClaimed(
+  publicClient: PublicClient,
+  contractAddress: `0x${string}`,
+  address: `0x${string}`,
+) {
+  const result = await publicClient.readContract({
+    address: contractAddress,
+    abi: parseAbi([
+      "function isClaimed(address account) external view returns (bool)",
+    ]),
+    functionName: "isClaimed",
+    args: [address],
+  });
+  return result;
+}
+
+function getClaimParams(
+  address: `0x${string}`,
+  amount: bigint,
+  proof: `0x${string}`[],
+) {
+  return encodeAbiParameters(
+    [{ type: "address" }, { type: "uint256" }, { type: "bytes32[]" }],
+    [address, amount, proof],
+  );
+}
+
+export async function claimAirstream(
+  writeContractAsync: any,
   contractAddress: `0x${string}`,
   address: `0x${string}`,
   amount: bigint,
   proof: `0x${string}`[],
 ) {
-  return new Promise<`0x${string}`>((resolve, reject) => {
-    (async () => {
-      console.log(contractAddress, { address, amount, proof });
-      writeContract(
-        {
-          address: contractAddress,
-          abi: parseAbi([
-            "function claim(address account, uint256 amount, bytes32[] calldata proof)",
-          ]),
-          functionName: "claim",
-          args: [address, amount, proof],
-        },
-        {
-          onSuccess: resolve,
-          onError: reject,
-        },
-      );
-    })();
+  const macroForwarder = "0xFD0268E33111565dE546af2675351A4b1587F89F";
+
+  const receipt = await writeContractAsync({
+    address: macroForwarder,
+    abi: parseAbi([
+      "function runMacro(address m, bytes calldata params) external payable returns (bool)",
+    ]),
+    args: [contractAddress, getClaimParams(address, amount, proof)],
   });
+  return receipt;
 }
