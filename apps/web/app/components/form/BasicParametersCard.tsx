@@ -26,6 +26,14 @@ function BasicParametersCard({ form }: { form: Form }) {
       description="The settings below will determine the amount of tokens that will be distributed and the duration of the airstream."
     >
       <Field
+        type="text"
+        form={form}
+        name="name"
+        label="Airstream Name"
+        description="The name of the airstream."
+        placeholder="e.g. My Airstream"
+      />
+      <Field
         type="address"
         form={form}
         name="distributionToken"

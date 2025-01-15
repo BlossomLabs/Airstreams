@@ -1,13 +1,17 @@
 import { viem } from "hardhat";
 import { parseEventLogs, parseUnits } from "viem";
-import { AIRSTREAM_FACTORY_ADDRESS } from "../../../constants";
+
+const chainId = 11155111;
 
 async function main() {
+  const deployedAddresses = await import(
+    `../ignition/deployments/chain-${chainId}/deployed_addresses.json`
+  );
   const publicClient = await viem.getPublicClient();
 
   const airstreamFactory = await viem.getContractAt(
     "AirstreamFactory",
-    AIRSTREAM_FACTORY_ADDRESS,
+    deployedAddresses["AirstreamFactory#AirstreamFactory"] as `0x${string}`,
   );
 
   const hash = await airstreamFactory.write.createAirstream([

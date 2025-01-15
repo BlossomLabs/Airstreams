@@ -1,9 +1,10 @@
 import type { FormValues } from "@/utils/form";
-import { downloadMerkleTree, getMerkleRoot } from "@/utils/merkletree";
-import { AIRSTREAM_FACTORY_ADDRESS } from "@/utils/site";
+import { getMerkleRoot } from "@/utils/merkletree";
 import { getTimeInSeconds } from "@/utils/time";
 import {
   type PublicClient,
+  type TransactionReceipt,
+  getAddress,
   isAddress,
   parseAbi,
   parseAbiItem,
@@ -11,20 +12,14 @@ import {
   parseUnits,
 } from "viem";
 import { sepolia } from "viem/chains";
+import deployedAddresses from "../../../../contracts/airstream/ignition/deployments/chain-11155111/deployed_addresses.json";
 
-export async function processTx(
-  hash: `0x${string}`,
-  publicClient: PublicClient,
-) {
-  const receipt = await publicClient.waitForTransactionReceipt({
-    hash,
-    timeout: 5 * 60 * 1000,
-  });
-  console.log({ receipt });
-
+async function processCreateAirstreamReceipt(receipt: TransactionReceipt) {
   const logs = parseEventLogs({
     abi: [
-      parseAbiItem("event AirstreamCreated(address airstream, address pool)"),
+      parseAbiItem(
+        "event AirstreamCreated(address airstream, address controller, address pool)",
+      ),
     ],
     logs: receipt.logs,
   });
@@ -33,14 +28,14 @@ export async function processTx(
     .filter((log) => log.eventName === "AirstreamCreated")
     .map((log) => log.args)[0];
 
-  return {
-    airstream,
-  };
+  return airstream;
 }
 
 export function getContractAddress(chain: any) {
   if (chain?.id === sepolia.id) {
-    return AIRSTREAM_FACTORY_ADDRESS;
+    return deployedAddresses[
+      "AirstreamFactory#AirstreamFactory"
+    ] as `0x${string}`;
   }
   return undefined;
 }
@@ -74,46 +69,44 @@ export async function getRecipients(values: FormValues) {
   return recipients;
 }
 
-export async function sendCreateAirstreamTx(
-  writeContract: any,
+export async function createAirstream(
+  writeContractsSync: any,
   contractAddress: `0x${string}`,
   values: FormValues,
   recipients: { address: `0x${string}`; amount: bigint }[],
 ) {
-  return new Promise<`0x${string}`>((resolve, reject) => {
-    (async () => {
-      // FIXME: This should have the airstream address instead of the factory address
-      downloadMerkleTree(recipients, contractAddress, "sepolia");
+  const totalAmount = BigInt(
+    recipients.reduce((acc, curr) => acc + curr.amount, 0n),
+  );
 
-      writeContract(
+  const receipts = await writeContractsSync([
+    {
+      address: getAddress(values.distributionToken),
+      abi: parseAbi(["function approve(address spender, uint256 amount)"]),
+      args: [contractAddress, totalAmount],
+    },
+    {
+      address: contractAddress,
+      abi: parseAbi([
+        "struct AirstreamConfig { string name; address token; bytes32 merkleRoot; uint96 totalAmount; uint64 duration; }",
+        "function createAirstream(AirstreamConfig memory config)",
+      ]),
+      args: [
         {
-          address: contractAddress,
-          abi: parseAbi([
-            "struct DeploymentConfig { address distributionToken; bytes32 merkleRoot; uint96 totalAmount; uint64 duration; }",
-            "function createAirstream(DeploymentConfig memory config)",
-          ]),
-          functionName: "createAirstream",
-          args: [
-            {
-              distributionToken: values.distributionToken,
-              merkleRoot: getMerkleRoot(recipients),
-              duration: getTimeInSeconds(
-                values.airstreamDuration.amount,
-                values.airstreamDuration.unit,
-              ),
-              totalAmount: BigInt(
-                recipients.reduce((acc, curr) => acc + curr.amount, 0n),
-              ),
-            },
-          ],
+          name: values.name,
+          token: getAddress(values.distributionToken),
+          merkleRoot: getMerkleRoot(recipients),
+          duration: getTimeInSeconds(
+            values.airstreamDuration.amount,
+            values.airstreamDuration.unit,
+          ),
+          totalAmount,
         },
-        {
-          onSuccess: resolve,
-          onError: reject,
-        },
-      );
-    })();
-  });
+      ],
+    },
+  ]);
+  const airstreamAddress = await processCreateAirstreamReceipt(receipts[1]);
+  return airstreamAddress;
 }
 
 export async function sendClaimAirstreamTx(

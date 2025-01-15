@@ -1,9 +1,9 @@
 import BasicParametersCard from "@/components/form/BasicParametersCard";
+import useWriteContractsSync from "@/hooks/useWriteContractsSync";
 import {
+  createAirstream,
   getContractAddress,
   getRecipients,
-  processTx,
-  sendCreateAirstreamTx,
 } from "@/utils/airstream";
 import { type FormValues, useCreateAirstreamForm } from "@/utils/form";
 import { downloadMerkleTree } from "@/utils/merkletree";
@@ -16,15 +16,13 @@ import {
 import { Button } from "@repo/ui/components/ui/button";
 import { Form } from "@repo/ui/components/ui/form";
 import { useToast } from "@repo/ui/hooks/use-toast";
-import type { PublicClient } from "viem";
-import { useAccount, usePublicClient, useWriteContract } from "wagmi";
+import { useAccount } from "wagmi";
 
 function CreatePage() {
-  const { writeContract } = useWriteContract();
+  const { writeContractsSync } = useWriteContractsSync();
   const form = useCreateAirstreamForm();
   const { address, chain } = useAccount();
   const { toast } = useToast();
-  const publicClient = usePublicClient() as PublicClient;
 
   async function onSubmit(values: FormValues) {
     console.log(values);
@@ -38,10 +36,10 @@ function CreatePage() {
       return;
     }
     const recipients = await getRecipients(values);
-    let res: `0x${string}` | undefined;
+    let result: `0x${string}` | undefined;
     try {
-      res = await sendCreateAirstreamTx(
-        writeContract,
+      result = await createAirstream(
+        writeContractsSync,
         contractAddress,
         values,
         recipients,
@@ -51,24 +49,14 @@ function CreatePage() {
       sendCreateAirstreamTxErrorToast(toast);
       return;
     }
-    console.log({ res });
 
-    const result = await processTx(res, publicClient);
-    if (!result || !result.airstream) {
+    if (!result) {
       processTxErrorToast(toast);
       return;
     }
-    const { airstream } = result;
+    const airstream = result;
 
     downloadMerkleTree(recipients, airstream, "sepolia");
-
-    // try {
-    //   res = await sendDistributeFlowTx(writeContract, airstream);
-    // } catch (error) {
-    //   sendDistributeFlowTxErrorToast(toast);
-    //   return;
-    // }
-    // await publicClient.waitForTransactionReceipt({ hash })
     toast({
       title: "Airstream created",
       description: <>{airstream}</>,

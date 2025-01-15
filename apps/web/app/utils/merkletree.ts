@@ -25,7 +25,7 @@ export function getProof(json: any, address: `0x${string}`) {
 export function downloadMerkleTree(
   recipients: Recipient[],
   contract: `0x${string}`,
-  chain: "sepolia",
+  chain: string,
 ) {
   const tree = StandardMerkleTree.of(
     recipients.map((recipient) => [recipient.address, recipient.amount]),
