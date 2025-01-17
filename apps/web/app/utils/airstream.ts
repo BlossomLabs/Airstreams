@@ -12,8 +12,8 @@ import {
   parseEventLogs,
   parseUnits,
 } from "viem";
-import { sepolia } from "viem/chains";
-import deployedAddresses from "../../../../contracts/airstream/ignition/deployments/chain-11155111/deployed_addresses.json";
+import { base } from "viem/chains";
+import deployedAddresses from "../../../../contracts/airstream/ignition/deployments/chain-8453/deployed_addresses.json";
 
 async function processCreateAirstreamReceipt(receipt: TransactionReceipt) {
   const logs = parseEventLogs({
@@ -33,7 +33,7 @@ async function processCreateAirstreamReceipt(receipt: TransactionReceipt) {
 }
 
 export function getContractAddress(chain: any) {
-  if (chain?.id === sepolia.id) {
+  if (chain?.id === base.id) {
     return deployedAddresses[
       "AirstreamFactory#AirstreamFactory"
     ] as `0x${string}`;

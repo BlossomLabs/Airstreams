@@ -67,16 +67,23 @@ function CreatePage() {
         airstream,
         chain.id,
       );
+      navigate(`/claim/${cid}`);
       toast({
         title: "Airstream created",
+        description:
+          "Copy the link to your airstream to share it with your friends.",
         variant: "default",
         duration: 60000,
         action: (
           <ToastAction
-            onClick={() => navigate(`/claim/${cid}`)}
-            altText="Visit airstream page"
+            onClick={() =>
+              navigator.clipboard.writeText(
+                `${window.location.origin}/claim/${cid}`,
+              )
+            }
+            altText="Copy"
           >
-            Visit airstream page
+            Copy
           </ToastAction>
         ),
       });

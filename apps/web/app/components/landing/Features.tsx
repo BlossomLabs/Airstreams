@@ -30,7 +30,7 @@ const featuresList = [
   {
     title: "Many Supported Tokens and Networks",
     description:
-      "Airstreams currently supports all ERC20 tokens on the Sepolia network, with plans to support Base coming soon.",
+      "Airstreams currently supports all ERC20 tokens on the Base network, with plans to support other networks soon.",
     icon: <WalletIcon />,
   },
 ];

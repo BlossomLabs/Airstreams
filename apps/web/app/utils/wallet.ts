@@ -3,7 +3,7 @@ import { SITE_NAME } from "@/utils/site";
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { createPublicClient } from "viem";
 import { http, type Config, createConfig } from "wagmi";
-import { mainnet, sepolia } from "wagmi/chains";
+import { base, mainnet } from "wagmi/chains";
 
 export const WALLETCONNECT_PROJECT_ID =
   import.meta.env.VITE_WALLETCONNECT_PROJECT_ID ?? "";
@@ -17,7 +17,7 @@ if (!WALLETCONNECT_PROJECT_ID) {
 export const WALLETCONNECT_CONFIG: Config = getDefaultConfig({
   appName: SITE_NAME,
   projectId: WALLETCONNECT_PROJECT_ID || "dummy",
-  chains: [sepolia],
+  chains: [base],
   ssr: false,
 });
 

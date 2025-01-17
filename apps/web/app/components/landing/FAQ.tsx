@@ -40,7 +40,7 @@ const FAQList: FAQProps[] = [
   {
     question: "Are Airstreams compatible with multiple networks and tokens?",
     answer:
-      "Yes, Airstreams currently support all ERC20 tokens on the Sepolia network, with plans to expand to Base and other networks soon. This multi-network compatibility ensures a wide range of projects can adopt this innovative solution.",
+      "Yes, Airstreams currently support all ERC20 tokens on the Base network, with plans to support other networks soon. This multi-network compatibility ensures a wide range of projects can adopt this innovative solution.",
     value: "item-5",
   },
 ];

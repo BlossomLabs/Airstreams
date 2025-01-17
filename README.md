@@ -8,13 +8,7 @@ Traditional airdrops often lead to users claiming tokens in bulk, resulting in m
 
 ## Supported Tokens and Networks
 
-Airstreams currently supports all ERC20 tokens on the following network:
-
-- **Sepolia**
-
-### Coming Soon
-
-- **Base**
+Airstreams currently supports all ERC20 tokens on the **base** network.
 
 ## About Superfluid
 
