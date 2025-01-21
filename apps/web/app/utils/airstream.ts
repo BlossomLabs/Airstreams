@@ -71,6 +71,8 @@ export async function getRecipients(values: FormValues) {
 }
 
 export async function createAirstream(
+  address: `0x${string}`,
+  publicClient: PublicClient,
   writeContractsSync: any,
   contractAddress: `0x${string}`,
   values: FormValues,
@@ -80,32 +82,57 @@ export async function createAirstream(
     recipients.reduce((acc, curr) => acc + curr.amount, 0n),
   );
 
-  const receipts = await writeContractsSync([
-    {
-      address: getAddress(values.distributionToken),
-      abi: parseAbi(["function approve(address spender, uint256 amount)"]),
-      args: [contractAddress, totalAmount],
-    },
-    {
-      address: contractAddress,
-      abi: parseAbi([
-        "struct AirstreamConfig { string name; address token; bytes32 merkleRoot; uint96 totalAmount; uint64 duration; }",
-        "function createAirstream(AirstreamConfig memory config)",
-      ]),
-      args: [
-        {
-          name: values.name,
-          token: getAddress(values.distributionToken),
-          merkleRoot: getMerkleRoot(recipients),
-          duration: getTimeInSeconds(
-            values.airstreamDuration.amount,
-            values.airstreamDuration.unit,
-          ),
-          totalAmount,
-        },
-      ],
-    },
-  ]);
+  const balance = await publicClient.readContract({
+    address: getAddress(values.distributionToken),
+    abi: parseAbi([
+      "function balanceOf(address owner) external view returns (uint256)",
+    ]),
+    functionName: "balanceOf",
+    args: [address],
+  });
+
+  if (balance < totalAmount) {
+    throw new Error("Insufficient balance");
+  }
+
+  const allowance = await publicClient.readContract({
+    address: getAddress(values.distributionToken),
+    abi: parseAbi([
+      "function allowance(address owner, address spender) external view returns (uint256)",
+    ]),
+    functionName: "allowance",
+    args: [address, contractAddress],
+  });
+
+  const approve = {
+    address: getAddress(values.distributionToken),
+    abi: parseAbi(["function approve(address spender, uint256 amount)"]),
+    args: [contractAddress, totalAmount],
+  };
+
+  const createAirstream = {
+    address: contractAddress,
+    abi: parseAbi([
+      "struct AirstreamConfig { string name; address token; bytes32 merkleRoot; uint96 totalAmount; uint64 duration; }",
+      "function createAirstream(AirstreamConfig memory config)",
+    ]),
+    args: [
+      {
+        name: values.name,
+        token: getAddress(values.distributionToken),
+        merkleRoot: getMerkleRoot(recipients),
+        duration: getTimeInSeconds(
+          values.airstreamDuration.amount,
+          values.airstreamDuration.unit,
+        ),
+        totalAmount,
+      },
+    ],
+  };
+
+  const receipts = await writeContractsSync(
+    allowance < totalAmount ? [approve, createAirstream] : [createAirstream],
+  );
   const airstreamAddress = await processCreateAirstreamReceipt(receipts[1]);
   return airstreamAddress;
 }

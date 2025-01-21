@@ -21,6 +21,15 @@ function wrongNetworkToast(toast: (options: ToastOptions) => void) {
   });
 }
 
+function insufficientBalanceToast(toast: (options: ToastOptions) => void) {
+  toast({
+    title: "Insufficient balance",
+    description:
+      "You do not have enough balance of the selected token to create an airstream.",
+    variant: "destructive",
+  });
+}
+
 function sendCreateAirstreamTxErrorToast(
   toast: (options: ToastOptions) => void,
 ) {
@@ -53,6 +62,7 @@ function sendClaimAirstreamTxErrorToast(
 export {
   walletNotConnectedToast,
   wrongNetworkToast,
+  insufficientBalanceToast,
   sendCreateAirstreamTxErrorToast,
   processTxErrorToast,
   sendClaimAirstreamTxErrorToast,

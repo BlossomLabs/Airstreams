@@ -8,6 +8,7 @@ import {
 import { type FormValues, useCreateAirstreamForm } from "@/utils/form";
 import { downloadMerkleTree, uploadMerkleTreeToIpfs } from "@/utils/merkletree";
 import {
+  insufficientBalanceToast,
   processTxErrorToast,
   sendCreateAirstreamTxErrorToast,
   walletNotConnectedToast,
@@ -19,7 +20,7 @@ import { ToastAction } from "@repo/ui/components/ui/toast";
 import { useToast } from "@repo/ui/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router";
-import { useAccount } from "wagmi";
+import { useAccount, useBalance, usePublicClient } from "wagmi";
 
 function CreatePage() {
   const { writeContractsSync } = useWriteContractsSync();
@@ -27,10 +28,11 @@ function CreatePage() {
   const { address, chain } = useAccount();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const publicClient = usePublicClient();
 
   async function onSubmit(values: FormValues) {
     console.log(values);
-    if (!address || !chain) {
+    if (!address || !chain || !publicClient) {
       walletNotConnectedToast(toast);
       return;
     }
@@ -43,6 +45,8 @@ function CreatePage() {
     let result: `0x${string}` | undefined;
     try {
       result = await createAirstream(
+        address,
+        publicClient,
         writeContractsSync,
         contractAddress,
         values,
@@ -50,7 +54,14 @@ function CreatePage() {
       );
     } catch (error) {
       console.error(error);
-      sendCreateAirstreamTxErrorToast(toast);
+      if (
+        error instanceof Error &&
+        error.message.includes("Insufficient balance")
+      ) {
+        insufficientBalanceToast(toast);
+      } else {
+        sendCreateAirstreamTxErrorToast(toast);
+      }
       return;
     }
 

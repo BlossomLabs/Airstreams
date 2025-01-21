@@ -13,6 +13,9 @@ function useWriteContractsSync() {
     }
     const receipts: TransactionReceipt[] = [];
     for (const operation of operations) {
+      if (!operation) {
+        continue;
+      }
       const hash = await writeContractAsync(operation);
       receipts.push(
         await publicClient.waitForTransactionReceipt({
