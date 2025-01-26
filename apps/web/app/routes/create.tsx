@@ -11,16 +11,16 @@ import {
   insufficientBalanceToast,
   processTxErrorToast,
   sendCreateAirstreamTxErrorToast,
+  uploadMerkleTreeToIpfsErrorToast,
   walletNotConnectedToast,
   wrongNetworkToast,
 } from "@/utils/toasts";
 import { Button } from "@repo/ui/components/ui/button";
 import { Form } from "@repo/ui/components/ui/form";
-import { ToastAction } from "@repo/ui/components/ui/toast";
 import { useToast } from "@repo/ui/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router";
-import { useAccount, useBalance, usePublicClient } from "wagmi";
+import { useAccount, usePublicClient } from "wagmi";
 
 function CreatePage() {
   const { writeContractsSync } = useWriteContractsSync();
@@ -78,34 +78,10 @@ function CreatePage() {
         airstream,
         chain.id,
       );
-      navigate(`/claim/${cid}`);
-      toast({
-        title: "Airstream created",
-        description:
-          "Copy the link to your airstream to share it with your friends.",
-        variant: "default",
-        duration: 60000,
-        action: (
-          <ToastAction
-            onClick={() =>
-              navigator.clipboard.writeText(
-                `${window.location.origin}/claim/${cid}`,
-              )
-            }
-            altText="Copy"
-          >
-            Copy
-          </ToastAction>
-        ),
-      });
+      navigate(`/created/${cid}`);
     } catch (error) {
       console.error(error);
-      toast({
-        title: "Error uploading merkle tree to IPFS",
-        description: "Upload it manually, please.",
-        variant: "destructive",
-      });
-
+      uploadMerkleTreeToIpfsErrorToast(toast);
       downloadMerkleTree(values.name, recipients, airstream, chain.id);
     }
   }

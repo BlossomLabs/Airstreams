@@ -8,6 +8,7 @@ import { sendClaimAirstreamTxErrorToast } from "@/utils/toasts";
 import { Button } from "@repo/ui/components/ui/button";
 import { useToast } from "@repo/ui/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { formatUnits, parseAbi } from "viem";
@@ -24,7 +25,11 @@ function ClaimPage() {
   const { toast } = useToast();
   const ipfsHash = useParams().ipfs;
 
-  const { data: file, isLoading } = useQuery({
+  const {
+    data: file,
+    isLoading: isLoadingFile,
+    isError: isErrorFile,
+  } = useQuery({
     queryKey: ["file", ipfsHash],
     queryFn: () => {
       return fetch(`https://ipfs.blossom.software/ipfs/${ipfsHash}`).then(
@@ -36,7 +41,11 @@ function ClaimPage() {
   const [proof, setProof] = useState<`0x${string}`[] | null>(null);
   const [amount, setAmount] = useState<bigint | null>(null);
 
-  const { data } = useReadContracts({
+  const {
+    data,
+    isLoading: isLoadingContracts,
+    isError: isErrorContracts,
+  } = useReadContracts({
     contracts: [
       {
         abi: parseAbi([
@@ -130,8 +139,42 @@ function ClaimPage() {
     );
   }
 
-  if (isLoading) {
-    return;
+  if (isLoadingFile || isLoadingContracts) {
+    return (
+      <div className="max-w-xl mx-auto">
+        <div className="px-3 mt-16">
+          <FormCard
+            title="Loading..."
+            description="We're checking if you're eligible for this Airstream. This might take a few seconds..."
+          >
+            <div className="flex justify-center">
+              <Loader2 className="animate-spin h-10 w-10" />
+            </div>
+          </FormCard>
+        </div>
+      </div>
+    );
+  }
+
+  if (isErrorFile || isErrorContracts) {
+    return (
+      <div className="max-w-xl mx-auto">
+        <div className="px-3 mt-16">
+          <FormCard
+            title="Error"
+            description={
+              isErrorFile
+                ? "File not found"
+                : "There is something wrong with the contract"
+            }
+          >
+            <div className="flex justify-center">
+              <div className="text-6xl">😢</div>
+            </div>
+          </FormCard>
+        </div>
+      </div>
+    );
   }
 
   if (isClaimed) {
@@ -157,7 +200,7 @@ function ClaimPage() {
         <div className="px-3 mt-16">
           <FormCard
             title="You are elegible for this Airstream"
-            description="Congratulations  🎉! You can claim your Airstream now and start receiving your tokens!"
+            description="Congratulations 🎉! You can claim your Airstream now and start receiving your tokens!"
           >
             <div className="flex justify-center">
               <Button

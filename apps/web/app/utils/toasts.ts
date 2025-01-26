@@ -1,7 +1,11 @@
+import type { ToastActionElement } from "@repo/ui/components/ui/toast";
+
 type ToastOptions = {
   title: string;
   description: string;
   variant: "default" | "destructive";
+  duration?: number;
+  action?: ToastActionElement;
 };
 
 function walletNotConnectedToast(toast: (options: ToastOptions) => void) {
@@ -59,6 +63,24 @@ function sendClaimAirstreamTxErrorToast(
   });
 }
 
+function uploadMerkleTreeToIpfsErrorToast(
+  toast: (options: ToastOptions) => void,
+) {
+  toast({
+    title: "Error uploading merkle tree to IPFS",
+    description: "Upload it manually, please.",
+    variant: "destructive",
+  });
+}
+
+function airstreamLinkCopiedToast(toast: (options: ToastOptions) => void) {
+  toast({
+    title: "Link copied to clipboard",
+    description: "You can now share it with your users!",
+    variant: "default",
+  });
+}
+
 export {
   walletNotConnectedToast,
   wrongNetworkToast,
@@ -66,4 +88,6 @@ export {
   sendCreateAirstreamTxErrorToast,
   processTxErrorToast,
   sendClaimAirstreamTxErrorToast,
+  uploadMerkleTreeToIpfsErrorToast,
+  airstreamLinkCopiedToast,
 };
